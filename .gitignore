@@ -1,0 +1,54 @@
+# ROS / colcon build products
+build/
+install/
+log/
+logs/
+
+# Runtime state, generated configs, logs, pids, and local secrets
+runtime/
+config/**/backups/
+*.before_*
+*.log
+*.pid
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Robot-generated debug artifacts
+frames_*.gv
+frames_*.pdf
+render_feedback_*.jpeg
+render_feedback_*.jpg
+handeye_point_images/
+
+# Local accidental files
+-H
+.DS_Store
+
+# Large model artifacts. Keep model README/config files in git.
+models/**/*.bin
+models/**/*.gguf
+models/**/*.pt
+models/**/*.onnx
+models/**/*.engine
+models/**/*.hef
+models/**/*.hbm
+models/**/*.log
+models/**/*.png
+models/**/*.jpg
+models/**/*.jpeg
+
+# ROS bags and datasets
+*.bag
+*.db3
+*.mcap
+datasets/
+paper_ball_dataset/

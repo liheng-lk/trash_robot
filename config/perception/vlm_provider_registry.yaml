@@ -1,0 +1,43 @@
+version: 1
+active_provider: mimo
+fallback_order:
+- mimo
+providers:
+  dashscope:
+    enabled: false
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    api_key_env: DASHSCOPE_API_KEY
+    primary_model: qwen-image-2.0-pro
+    model_candidates:
+    - qwen3.5-omni-flash-realtime
+    - qwen3.5-omni-flash-realtime-2026-03-15
+    - qwen3.5-omni-plus-realtime-2026-03-15
+  mimo:
+    enabled: true
+    base_url: https://token-plan-sgp.xiaomimimo.com/v1
+    api_key_env: MIMO_API_KEY
+    primary_model: mimo-v2.5
+    model_candidates:
+    - mimo-v2.5
+    - mimo-v2-omni
+  zhipu:
+    enabled: false
+    base_url: https://open.bigmodel.cn/api/paas/v4
+    api_key_env: ZHIPUAI_API_KEY
+    primary_model: glm-4v-plus-0111
+    model_candidates:
+    - glm-4v-plus-0111
+    - glm-4v-plus
+  local_hobot:
+    enabled: false
+    base_url: ''
+    api_key_env: ''
+    primary_model: hobot_dosod
+    model_candidates:
+    - hobot_dosod
+  deepseek:
+    enabled: false
+    base_url: ''
+    api_key_env: DEEPSEEK_API_KEY
+    primary_model: ''
+    model_candidates: []

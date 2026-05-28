@@ -1,0 +1,77 @@
+# Patrol routes are map-frame poses in meters/degrees.
+# mode: closed_loop = p1->...->pn->p1; open_loop = p1->...->pn->...->p1; once = stop at pn.
+# Use scripts/record_patrol_waypoint.sh after AMCL is aligned in RViz.
+active_route: office_loop
+routes:
+  origin_hold:
+    mode: closed_loop
+    loop: true
+    waypoints:
+    - name: origin
+      x: 0.0
+      y: 0.0
+      yaw_deg: 0.0
+  office_loop:
+    mode: closed_loop
+    loop: true
+    waypoints:
+    - name: p1
+      x: -4.397
+      y: 3.761
+      yaw_deg: 19.0
+      dwell_sec: 5.0
+    - name: p2
+      x: -4.563
+      y: 1.347
+      yaw_deg: -116.5
+      dwell_sec: 5.0
+    - name: p3
+      x: -6.803
+      y: -0.968
+      yaw_deg: -124.6
+      dwell_sec: 5.0
+  hallway_line:
+    mode: open_loop
+    loop: false
+    waypoints:
+    - name: p1
+      x: -1.016
+      y: -0.676
+      yaw_deg: -37.3
+      dwell_sec: 5.0
+mission:
+  grasp_enabled_default: true
+  patrol_goal_yaw_mode: path
+  patrol_start_skip_radius_m: 0.45
+  waypoint_dwell_sec: 5.0
+  target_max_age_sec: 1.2
+  label_max_age_sec: 1.5
+  detection_confirm_sec: 0.0
+  grasp_timeout_sec: 120.0
+  local_approach_timeout_sec: 60.0
+  local_approach_linear_speed: 0.035
+  local_approach_angular_gain: 1.2
+  local_approach_max_angular: 0.18
+  camera_center_deadband_m: 0.025
+  camera_desired_z_m: 0.15
+  camera_z_tolerance_m: 0.03
+  camera_grasp_min_z_m: 0.12
+  camera_grasp_max_z_m: 0.18
+  target_nav_enabled: true
+  target_nav_standoff_m: 0.6
+  target_nav_min_travel_m: 0.18
+  target_nav_timeout_sec: 35.0
+  target_nav_tf_timeout_sec: 0.2
+  target_nav_use_local_fallback: true
+  target_refresh_timeout_sec: 90.0
+  target_refresh_min_wait_sec: 0.5
+  visual_align_timeout_sec: 5.0
+  visual_align_stable_sec: 0.8
+  visual_align_no_candidate_wait_sec: 1.2
+  local_candidate_enabled: true
+  local_candidate_max_age_sec: 1.5
+  local_candidate_min_confidence: 0.08
+  vlm_visual_candidate_enabled: true
+  vlm_visual_candidate_max_age_sec: 1.0
+  vlm_visual_candidate_max_latency_ms: 15000.0
+  advance_patrol_after_grasp: false

@@ -1,0 +1,25 @@
+{
+  "model_file": "/home/sunrise/trash_robot_v3/models/paper_ball_yolov8n/paper_ball_yolov8n_640x640_nv12.bin",
+  "task_num": 4,
+  "dnn_Parser": "ultralytics_yolo",
+  "model_output_count": 6,
+  "reg_max": 16,
+  "class_num": 1,
+  "cls_names_list": "/home/sunrise/trash_robot_v3/models/paper_ball_yolov8n/crumpled_paper.list",
+  "strides": [
+    8,
+    16,
+    32
+  ],
+  "score_threshold": 0.08,
+  "nms_threshold": 0.7,
+  "nms_top_k": 100,
+  "output_order": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ]
+}

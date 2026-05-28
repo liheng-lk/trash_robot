@@ -1,0 +1,11 @@
+# Goal
+# command is only for operator/event trace, for example MANUAL, PATROL, API.
+string command
+---
+# Result
+bool success
+string message
+---
+# Feedback
+string stage
+string message

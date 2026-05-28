@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>trash_robot_bringup</name>
+  <version>0.1.0</version>
+  <description>Launch files for Trash Robot V3.</description>
+  <maintainer email="sunrise@todo.todo">sunrise</maintainer>
+  <license>Apache-2.0</license>
+
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>moveit_configs_utils</exec_depend>
+  <exec_depend>moveit_servo</exec_depend>
+  <exec_depend>roarm_moveit</exec_depend>
+  <exec_depend>roarm_moveit_cmd</exec_depend>
+  <exec_depend>dnn_node_example</exec_depend>
+  <exec_depend>hobot_usb_cam</exec_depend>
+  <exec_depend>trash_robot_vision</exec_depend>
+  <exec_depend>trash_robot_grasp</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

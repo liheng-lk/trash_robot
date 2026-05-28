@@ -1,0 +1,5 @@
+Use the system ROS Humble moveit_servo package from /opt/ros/humble.
+
+This source copy is kept for reference only. Building it on the RDK X5 is slow
+and unnecessary for this robot because the required package already exists in
+the ROS underlay.

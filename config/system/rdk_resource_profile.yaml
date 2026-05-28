@@ -1,0 +1,100 @@
+# RDK X5 runtime resource profile for Trash Robot V3.
+# This file is intentionally operational: Manager/check scripts read it to
+# decide what is safe to start and what should be reclaimed.
+
+version: 1
+
+disk:
+  root_warn_percent: 90
+  root_block_percent: 95
+  runtime_log_warn_mb: 300
+  component_log_max_mb: 50
+  ros_log_retention_days: 7
+  runtime_log_retention_days: 14
+  test_report_retention_days: 30
+
+process:
+  graceful_stop_sec: 1.2
+  force_stop_sec: 0.8
+  stale_registry_cleanup: true
+  cleanup_fastdds_shm_on_stop: true
+
+camera_profiles:
+  handeye:
+    color_width: 640
+    color_height: 480
+    color_fps: 15
+    enable_depth: false
+    enable_aligned_depth: false
+    enable_pointcloud: false
+  grasp:
+    color_width: 640
+    color_height: 480
+    color_fps: 15
+    depth_width: 640
+    depth_height: 480
+    depth_fps: 15
+    enable_aligned_depth: true
+    enable_pointcloud: false
+  navigation:
+    color_width: 640
+    color_height: 480
+    color_fps: 15
+    depth_width: 640
+    depth_height: 480
+    depth_fps: 15
+    enable_aligned_depth: true
+    enable_pointcloud: true
+
+video:
+  mjpeg:
+    port: 8092
+    max_clients: 2
+    max_fps: 4.0
+    max_width: 480
+    jpeg_quality: 55
+    overlay_max_age_sec: 0.8
+    coord_max_age_sec: 1.0
+
+vlm:
+  call_interval_sec: 2.0
+  api_timeout_sec: 8.0
+  min_confidence: 0.55
+  max_image_width: 640
+  jpeg_quality: 70
+  max_consecutive_failures: 5
+  backoff_initial_sec: 2.0
+  backoff_max_sec: 60.0
+
+manager:
+  runtime_modes:
+    exclusive_maintenance:
+      - CALIBRATION
+      - ARM_MANUAL
+    runtime:
+      - GRASP
+      - NAVIGATION
+    idle: IDLE
+  stop_order:
+    - mission
+    - grasp_vlm_live
+    - grasp_vlm_dry
+    - navigation
+    - mapping
+    - video
+    - base
+    - arm
+    - handeye
+    - camera
+  component_patterns:
+    camera: "realsense2_camera_node"
+    video: "light_mjpeg_streamer"
+    base: "serial_base_node|sllidar_node"
+    nav: "nav2_bt_navigator|controller_server|planner_server|amcl"
+    mission: "trash_mission_supervisor|/lib/trash_robot_mission/mission_supervisor"
+    vlm: "vlm_trash_classifier"
+    depth_locator: "pixel_depth_locator"
+    handeye_transformer: "handeye_target_transformer"
+    grasp: "roarm_sort_grasper|pixel_depth_locator|vlm_trash_classifier"
+    arm: "roarm_driver|movepointcmd|setgrippercmd|move_group"
+    handeye: "handeye_web_calibrator"

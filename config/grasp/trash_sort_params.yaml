@@ -1,0 +1,262 @@
+# Trash Robot V3 sorting grasp parameters.
+# Units in this file are millimeters unless a key ends with _sec.
+
+drop_points_mm:
+  GARBAGE_RECYCLE: [-132.184982, -22.72745138, -72.59739985]
+  GARBAGE_OTHER: [-113.4961574, 71.38376377, -51.76432275]
+  GARBAGE_HAZARD: [-130.3127525, -109.648523, -80.14200628]
+  GARBAGE_KITCHEN: [-103.6078482, 154.0349785, -59.9595406]
+
+label_aliases:
+  recycle: GARBAGE_RECYCLE
+  other: GARBAGE_OTHER
+  hazard: GARBAGE_HAZARD
+  kitchen: GARBAGE_KITCHEN
+  可回收: GARBAGE_RECYCLE
+  其他: GARBAGE_OTHER
+  有害: GARBAGE_HAZARD
+  厨余: GARBAGE_KITCHEN
+
+init_pose_mm: [118.1718722, -0.725102626, 32.39033932]
+safe_drop_pose_mm: [180.0, 0.0, -50.0]
+
+approach_mm: 60.0
+lift_mm: 80.0
+drop_safe_z_mm: 12.0
+
+# The vision target is an estimated visible surface/semantic grasp point, not
+# the final gripper contact pose. Ground trash needs a real downward contact
+# stroke after the hover pose, otherwise the gripper closes above the object.
+grasp_descent_offset_mm: [0.0, 0.0, -8.0]
+grasp_descent_steps: 1
+descent_lock_xy: true
+min_grasp_descent_mm: 20.0
+
+# Per-object grasp profiles. The VLM raw object name is matched against
+# by_raw_keyword first, then by_label, then default/global values above.
+# Keep XY locked during descent. RoArm's low-Z IK can drift in +X if a deep
+# diagonal motion is requested, so every pickup approach is hover -> Z-only
+# contact -> close.
+grasp_profiles:
+  default:
+    approach_mm: 85.0
+    target_offset_mm: [0.0, 0.0, 0.0]
+    descent_offset_mm: [0.0, 0.0, -25.0]
+    min_descent_mm: 20.0
+    descent_steps: 1
+    descent_lock_xy: true
+  by_label:
+    GARBAGE_RECYCLE:
+      approach_mm: 85.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -5.0]
+      min_descent_mm: 0.0
+      descent_steps: 1
+      descent_lock_xy: true
+    GARBAGE_KITCHEN:
+      approach_mm: 85.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -32.0]
+      min_descent_mm: 25.0
+      descent_steps: 1
+      descent_lock_xy: true
+    GARBAGE_HAZARD:
+      approach_mm: 90.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -18.0]
+      min_descent_mm: 12.0
+      descent_steps: 1
+      descent_lock_xy: true
+    GARBAGE_OTHER:
+      approach_mm: 90.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -28.0]
+      min_descent_mm: 22.0
+      descent_steps: 1
+      descent_lock_xy: true
+  by_strategy:
+    slender_midbody:
+      approach_mm: 90.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -16.0]
+      min_descent_mm: 10.0
+      descent_steps: 1
+      descent_lock_xy: true
+    crumpled_center:
+      approach_mm: 90.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -5.0]
+      min_descent_mm: 0.0
+      descent_steps: 1
+      descent_lock_xy: true
+    flat_sheet_center:
+      approach_mm: 75.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -22.0]
+      min_descent_mm: 18.0
+      descent_steps: 1
+      descent_lock_xy: true
+    cylindrical_midbody:
+      approach_mm: 90.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -20.0]
+      min_descent_mm: 14.0
+      descent_steps: 1
+      descent_lock_xy: true
+    soft_irregular_center:
+      approach_mm: 85.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -32.0]
+      min_descent_mm: 25.0
+      descent_steps: 1
+      descent_lock_xy: true
+    compact_top_pinch:
+      approach_mm: 80.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -24.0]
+      min_descent_mm: 18.0
+      descent_steps: 1
+      descent_lock_xy: true
+  by_raw_keyword:
+    paper:
+      approach_mm: 80.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -5.0]
+      min_descent_mm: 0.0
+      descent_steps: 1
+      descent_lock_xy: true
+    tissue:
+      approach_mm: 80.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -5.0]
+      min_descent_mm: 0.0
+      descent_steps: 1
+      descent_lock_xy: true
+    battery:
+      approach_mm: 90.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -16.0]
+      min_descent_mm: 10.0
+      descent_steps: 1
+      descent_lock_xy: true
+    alkaline:
+      approach_mm: 90.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -16.0]
+      min_descent_mm: 10.0
+      descent_steps: 1
+      descent_lock_xy: true
+    cell:
+      approach_mm: 90.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -16.0]
+      min_descent_mm: 10.0
+      descent_steps: 1
+      descent_lock_xy: true
+    banana:
+      approach_mm: 85.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -32.0]
+      min_descent_mm: 25.0
+      descent_steps: 1
+      descent_lock_xy: true
+    peel:
+      approach_mm: 85.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -32.0]
+      min_descent_mm: 25.0
+      descent_steps: 1
+      descent_lock_xy: true
+    bottle:
+      approach_mm: 90.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -20.0]
+      min_descent_mm: 14.0
+      descent_steps: 1
+      descent_lock_xy: true
+    can:
+      approach_mm: 90.0
+      target_offset_mm: [0.0, 0.0, 0.0]
+      descent_offset_mm: [0.0, 0.0, -20.0]
+      min_descent_mm: 14.0
+      descent_steps: 1
+      descent_lock_xy: true
+
+target_stability:
+  enabled: false
+  # 单次抓取优先可执行：使用第一个有效相机坐标，不再等待两个稳定样本。
+  window_sec: 3.0
+  min_samples: 1
+  max_delta_mm: 80.0
+  jump_reset_mm: 120.0
+
+motion_feedback:
+  enforce_pickup: true
+  pickup_xy_tolerance_mm: 30.0
+  pickup_z_tolerance_mm: 45.0
+
+# RoArm MovePointCmd can report success while the low-front pickup pose lands
+# forward/up from the commanded Cartesian point. This compensation is applied
+# only to pickup descent stages (pre_grasp/grasp). Lift must keep the grasped
+# XY position and only raise Z, so it does not receive pickup compensation.
+# Feedback still compares the
+# measured pose against the expected physical point, so a bad compensation fails
+# closed before the gripper closes.
+motion_command_compensation:
+  pickup_enabled: false
+  pickup_offset_mm: [0.0, 0.0, 0.0]
+
+# Low contact poses near the floor are not equally reliable across the arm's
+# front reach. A point can pass the coarse 2-link reach check while RoArm/MoveIt
+# still drifts forward/up at execution time. This table is used as a diagnostic
+# warning by default; the hard safety guard is motion_feedback, which checks
+# /get_pose_cmd before closing the gripper.
+contact_workspace:
+  enabled: true
+  reject_on_violation: false
+  clamp_on_violation: false
+  z_margin_mm: 8.0
+  lowest_reliable_z_by_x_mm:
+    - [240.0, -380.0]
+    - [280.0, -350.0]
+    - [310.0, -315.0]
+    - [340.0, -300.0]
+    - [380.0, -285.0]
+
+ik_precheck:
+  enabled: true
+  reach_margin_mm: 5.0
+
+# Pickup gate only applies to camera-front trash targets. Drop points may sit at
+# the side/back and are validated by RoArm MoveIt / SDK, not by this pickup gate.
+pickup_window_mm:
+  x: [0.0, 800.0]
+  y: [-300.0, 300.0]
+  z: [-500.0, 250.0]
+
+# Backward-compatible alias for older tooling; roarm_sort_grasper prefers
+# pickup_window_mm.
+grasp_window_mm:
+  x: [0.0, 800.0]
+  y: [-300.0, 300.0]
+  z: [-500.0, 250.0]
+
+gripper:
+  open: 0.8
+  close: 0.0
+  repeat: 2
+  repeat_interval_sec: 0.06
+  hold_sec: 0.45
+
+timing:
+  target_max_age_sec: 999.0
+  label_max_age_sec: 999.0
+  max_camera_point_age_sec: 999.0
+  max_arm_point_age_sec: 999.0
+  max_grasp_plan_age_sec: 999.0
+  cooldown_sec: 5.0
+  move_service_timeout_sec: 2.0
+  motion_timeout_sec: 18.0
+  grasp_plan_max_age_sec: 999.0
+  manual_trigger_wait_sec: 60.0
+  manual_trigger_wait_interval_sec: 0.1

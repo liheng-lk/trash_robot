@@ -1,0 +1,1736 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trash Robot V3 Console</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --line: #d9e1ea;
+      --text: #17202a;
+      --muted: #657386;
+      --good: #188a52;
+      --warn: #a66b00;
+      --bad: #c43232;
+      --blue: #1f6feb;
+      --ink: #0f172a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button, input, select {
+      font: inherit;
+    }
+    button {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 6px;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+    button:hover { border-color: #9fb2c8; }
+    button.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+    button.danger { background: var(--bad); border-color: var(--bad); color: #fff; }
+    button.warn { background: #fff8ea; border-color: #f0c46a; color: #674400; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 9px;
+      background: #fff;
+      color: var(--text);
+    }
+    label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 5px; }
+    .app { display: grid; grid-template-rows: 58px 1fr; min-height: 100vh; }
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .mark { width: 30px; height: 30px; border-radius: 6px; background: var(--ink); }
+    .brand h1 { font-size: 16px; margin: 0; letter-spacing: 0; }
+    .brand small { color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #fff;
+      white-space: nowrap;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #9aa8b8; }
+    .dot.good { background: var(--good); }
+    .dot.warn { background: var(--warn); }
+    .dot.bad { background: var(--bad); }
+    .safety {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid var(--line);
+      padding: 7px 10px;
+      border-radius: 6px;
+      background: #f8fafc;
+      white-space: nowrap;
+    }
+    .safety input { width: auto; }
+    .layout {
+      display: grid;
+      grid-template-columns: 170px minmax(0, 1fr) 300px;
+      gap: 12px;
+      padding: 12px;
+      min-height: 0;
+    }
+    .sidebar, .main, .right {
+      min-height: 0;
+    }
+    .sidebar {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px;
+    }
+    .navbtn {
+      width: 100%;
+      text-align: left;
+      border-color: transparent;
+      margin-bottom: 4px;
+      background: transparent;
+    }
+    .navbtn.active {
+      background: #eef5ff;
+      border-color: #c7dcff;
+      color: #134fa3;
+    }
+    .main {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .panel h2, .panel h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .grid { display: grid; gap: 10px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .stack { display: grid; gap: 10px; }
+    .vision-layout {
+      display: grid;
+      grid-template-columns: minmax(520px, 1.15fr) minmax(430px, .85fr);
+      gap: 12px;
+      align-items: start;
+    }
+    .settings-block {
+      display: grid;
+      gap: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #eef2f6;
+    }
+    .muted { color: var(--muted); }
+    .status-list { display: grid; gap: 7px; }
+    .status-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      border-bottom: 1px solid #eef2f6;
+      padding-bottom: 6px;
+    }
+    .badge {
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: #eef2f6;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .badge.good { background: #e7f7ee; color: var(--good); }
+    .badge.warn { background: #fff5df; color: var(--warn); }
+    .badge.bad { background: #fdeaea; color: var(--bad); }
+    .canvas-wrap {
+      position: relative;
+      min-height: 460px;
+      height: calc(100vh - 210px);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #101820;
+      overflow: hidden;
+      cursor: crosshair;
+    }
+    .rviz-wrap {
+      min-height: 560px;
+      height: calc(100vh - 190px);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #101820;
+      overflow: hidden;
+    }
+    .rviz-frame {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: #101820;
+    }
+    .rviz-note {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .nav2d-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 290px;
+      gap: 12px;
+      margin-top: 10px;
+      min-height: 0;
+    }
+    .nav2d-side {
+      display: grid;
+      align-content: start;
+      gap: 10px;
+    }
+    .layer-row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid #eef2f6;
+    }
+    .layer-row input { width: auto; }
+    .nav2d-status {
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+    }
+    .nav2d-status div {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+    #mapCanvas { width: 100%; height: 100%; display: block; }
+    .map-overlay {
+      position: absolute;
+      left: 10px;
+      bottom: 10px;
+      display: grid;
+      gap: 4px;
+      color: #d6e4f0;
+      background: rgba(15, 23, 42, .75);
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+    .video {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #0f172a;
+      max-height: calc(100vh - 170px);
+    }
+    .manual-pad {
+      display: grid;
+      grid-template-columns: 64px 64px 64px;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      margin: 8px 0;
+    }
+    .manual-pad button { height: 48px; font-weight: 700; }
+    .logbox {
+      white-space: pre-wrap;
+      background: #111827;
+      color: #d1d5db;
+      padding: 12px;
+      border-radius: 8px;
+      min-height: 300px;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+    }
+    .route-list { display: grid; gap: 6px; }
+    .route-point {
+      display: grid;
+      grid-template-columns: 42px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      max-width: 420px;
+      background: #0f172a;
+      color: #fff;
+      border-radius: 8px;
+      padding: 10px 12px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, .25);
+      display: none;
+    }
+    .toast.show { display: block; }
+    .hidden { display: none !important; }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 150px 1fr; }
+      .right { grid-column: 1 / -1; }
+    }
+    @media (max-width: 760px) {
+      .topbar { grid-template-columns: 1fr; }
+      .layout { grid-template-columns: 1fr; }
+      .nav2d-layout { grid-template-columns: 1fr; }
+      .vision-layout { grid-template-columns: 1fr; }
+      .sidebar { display: flex; overflow-x: auto; }
+      .navbtn { min-width: 120px; }
+      .grid.two, .grid.three { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark"></div>
+      <div>
+        <h1 data-i18n="title">垃圾分类机器人控制台</h1>
+        <small id="subtitle">Trash Robot V3</small>
+      </div>
+    </div>
+    <div class="pill"><span id="connDot" class="dot"></span><span id="connText">...</span></div>
+    <div class="toolbar">
+      <button id="langBtn">EN</button>
+      <button class="danger" id="estopBtn" data-i18n="estop">急停</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" id="nav"></aside>
+
+    <main class="main">
+      <section class="panel">
+        <div class="toolbar">
+          <span class="badge" id="modeBadge">IDLE</span>
+          <span class="badge" id="poseBadge">pose --</span>
+          <span class="badge" id="routeBadge">route --</span>
+          <span class="muted" id="lastMsg"></span>
+        </div>
+      </section>
+
+      <section class="panel view" id="view-overview">
+        <h2 data-i18n="overview">总览</h2>
+        <div class="grid three">
+          <div class="stack">
+            <h3 data-i18n="hardware">硬件状态</h3>
+            <div class="status-list" id="hardwareList"></div>
+          </div>
+          <div class="stack">
+            <h3 data-i18n="serviceState">服务状态</h3>
+            <div class="status-list" id="serviceList"></div>
+          </div>
+          <div class="stack">
+            <h3 data-i18n="liveVideo">实时视频</h3>
+            <img class="video" id="videoMini" alt="video">
+          </div>
+        </div>
+      </section>
+
+      <section class="panel view hidden" id="view-map">
+        <div class="toolbar" style="justify-content: space-between;">
+          <h2 data-i18n="mapNav">地图导航</h2>
+          <div class="toolbar">
+            <button id="rvizStartBtn" class="primary" data-i18n="rvizStart">启动RViz</button>
+            <button id="rvizRestartBtn" data-i18n="rvizRestart">重启RViz</button>
+            <button id="rvizStopBtn" class="warn" data-i18n="rvizStop">停止RViz</button>
+            <button id="rvizReloadBtn" data-i18n="rvizReload">刷新窗口</button>
+            <button id="rvizOpenBtn" data-i18n="rvizOpen">新窗口打开</button>
+            <button id="cancelNavBtn" class="warn" data-i18n="cancelNav">取消导航</button>
+          </div>
+          <div class="toolbar native-map-panel hidden">
+            <input id="rosWsUrl" style="width: 230px;" value="">
+            <button id="rosConnectBtn" data-i18n="connectRos">连接ROS</button>
+            <button id="rosReconnectBtn" data-i18n="reconnectRos">重连</button>
+            <button id="setInitialToolBtn" data-i18n="setInitialTool">设置初始位姿</button>
+            <button id="setGoalToolBtn" class="primary" data-i18n="setGoalTool">设置目标点</button>
+            <select id="mapTool">
+              <option value="pan" data-i18n="toolPan">平移</option>
+              <option value="initial" data-i18n="toolInitial">初始位姿</option>
+              <option value="goal" data-i18n="toolGoal">导航目标</option>
+              <option value="patrol" data-i18n="toolPatrol">巡逻点</option>
+            </select>
+            <button id="fitMapBtn" data-i18n="fitMap">适配全图</button>
+            <button id="resetViewBtn" data-i18n="resetView">重置视图</button>
+          </div>
+        </div>
+        <div class="nav2d-layout">
+          <div>
+            <div class="rviz-wrap">
+              <iframe id="rvizFrame" class="rviz-frame" title="RViz Web"></iframe>
+            </div>
+            <div class="canvas-wrap native-map-panel hidden">
+              <canvas id="mapCanvas"></canvas>
+              <div class="map-overlay">
+                <span id="rosInfo">ROS --</span>
+                <span id="mapInfo">map --</span>
+                <span id="robotInfo">robot --</span>
+                <span id="goalInfo">goal --</span>
+              </div>
+            </div>
+            <div class="grid three native-map-panel hidden" style="margin-top: 10px;">
+              <div><label>X</label><input id="poseX" type="number" step="0.01" value="0"></div>
+              <div><label>Y</label><input id="poseY" type="number" step="0.01" value="0"></div>
+              <div><label data-i18n="yawDeg">航向角</label><input id="poseYaw" type="number" step="1" value="0"></div>
+            </div>
+            <div class="toolbar native-map-panel hidden" style="margin-top: 10px;">
+              <button id="sendInitialBtn" data-i18n="sendInitial">发布初始位姿</button>
+              <button class="primary" id="sendGoalBtn" data-i18n="sendGoal">发送目标点</button>
+              <button id="addNavClickedPointBtn" data-i18n="addClickedPoint">添加巡逻点</button>
+            </div>
+          </div>
+          <aside class="nav2d-side">
+            <section>
+              <h3 data-i18n="rvizNative">原生RViz</h3>
+              <div class="nav2d-status">
+                <div><span data-i18n="rvizUrl">RViz地址</span><span id="rvizUrlText">--</span></div>
+                <div><span data-i18n="rvizConfig">配置</span><span>navigation_light.rviz</span></div>
+              </div>
+            </section>
+            <div class="native-map-panel hidden">
+            <section>
+              <h3 data-i18n="layers">图层</h3>
+              <div id="layerControls"></div>
+            </section>
+            <section>
+              <h3 data-i18n="nav2dStatus">导航状态</h3>
+              <div class="nav2d-status" id="nav2dStatus"></div>
+            </section>
+            <section>
+              <h3 data-i18n="topics">话题</h3>
+              <div class="nav2d-status" id="nav2dTopics"></div>
+            </section>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="panel view hidden" id="view-patrol">
+        <h2 data-i18n="patrol">巡逻</h2>
+        <div class="grid three">
+          <div><label data-i18n="route">路线</label><select id="routeSelect"></select></div>
+          <div><label data-i18n="newRoute">新路线</label><input id="newRouteName" value="office_loop"></div>
+          <div><label data-i18n="pointName">点位名</label><input id="pointName" value="p1"></div>
+        </div>
+        <div class="toolbar" style="margin-top: 10px;">
+          <button id="newRouteBtn" data-i18n="newRouteBtn">新建/切换路线</button>
+          <button id="recordPointBtn" data-i18n="recordCurrent">记录当前位置</button>
+          <button id="addClickedPointBtn" data-i18n="addClickedPoint">添加地图点</button>
+          <button id="saveRouteBtn" data-i18n="saveRoute">保存路线</button>
+          <button id="reloadRouteBtn" data-i18n="reloadRoute">重载路线</button>
+          <button class="primary" id="startPatrolBtn" data-i18n="startPatrol">开始巡逻</button>
+          <button id="pausePatrolBtn" data-i18n="pausePatrol">暂停</button>
+          <button id="resumePatrolBtn" data-i18n="resumePatrol">继续</button>
+          <button class="warn" id="stopPatrolBtn" data-i18n="stopPatrol">停止</button>
+        </div>
+        <div class="route-list" id="routeList" style="margin-top: 12px;"></div>
+      </section>
+
+      <section class="panel view hidden" id="view-video">
+        <h2 data-i18n="vision">视觉抓取</h2>
+        <div class="vision-layout">
+          <img class="video" id="videoFeed" alt="video stream">
+          <div class="stack">
+            <div class="status-list" id="visionInfo"></div>
+            <div class="grid two">
+              <div><label data-i18n="vlmProvider">VLM接口</label><select id="vlmProviderSelect"></select></div>
+              <div>
+                <label data-i18n="vlmModel">模型</label>
+                <input id="vlmModelSelect" list="vlmModelOptions" autocomplete="off">
+                <datalist id="vlmModelOptions"></datalist>
+              </div>
+            </div>
+            <div class="toolbar">
+              <button id="applyVlmBtn" data-i18n="applyVlm">应用模型</button>
+              <button id="restartVlmBtn" data-i18n="applyRestartVlm">应用并重启VLM</button>
+            </div>
+            <p class="muted" id="vlmModelInfo"></p>
+            <div class="settings-block">
+              <h3 data-i18n="customVlm">自定义VLM接口</h3>
+              <div class="grid two">
+                <div><label data-i18n="providerName">服务商名称</label><input id="customProviderName" placeholder="openai_compatible"></div>
+                <div><label data-i18n="customModel">模型名称</label><input id="customModelName" placeholder="gpt-4o-mini"></div>
+              </div>
+              <div class="grid two">
+                <div><label data-i18n="baseUrl">Base URL</label><input id="customBaseUrl" placeholder="https://api.example.com/v1"></div>
+                <div><label data-i18n="apiKeyEnv">密钥环境变量</label><input id="customApiKeyEnv" placeholder="CUSTOM_API_KEY"></div>
+              </div>
+              <div><label data-i18n="apiKeyOptional">API Key（可选，保存到 runtime/secrets/vlm.env）</label><input id="customApiKey" type="password" autocomplete="off"></div>
+              <div class="toolbar">
+                <button id="saveCustomVlmBtn" data-i18n="saveCustomVlm">保存并应用</button>
+                <button id="saveRestartCustomVlmBtn" data-i18n="saveRestartCustomVlm">保存并重启VLM</button>
+              </div>
+            </div>
+            <div class="toolbar">
+              <button id="enableGraspBtn" data-i18n="enableGrasp">启用自动抓取</button>
+              <button id="disableGraspBtn" data-i18n="disableGrasp">关闭自动抓取</button>
+              <button id="graspOnceBtn" data-i18n="graspOnce">单次抓取</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel view hidden" id="view-services">
+        <h2 data-i18n="services">服务管理</h2>
+        <div class="grid two" id="serviceControls"></div>
+      </section>
+
+      <section class="panel view hidden" id="view-manual">
+        <h2 data-i18n="manual">手动控制</h2>
+        <p class="muted" data-i18n="manualHint">按住按钮持续低速控制，松开或页面失焦会自动归零。</p>
+        <div class="grid two">
+          <div>
+            <label data-i18n="linearSpeed">线速度</label>
+            <input id="linearSpeed" type="range" min="0.02" max="0.10" step="0.01" value="0.06">
+            <span class="muted" id="linearSpeedText">0.06 m/s</span>
+          </div>
+          <div>
+            <label data-i18n="angularSpeed">角速度</label>
+            <input id="angularSpeed" type="range" min="0.08" max="0.35" step="0.01" value="0.22">
+            <span class="muted" id="angularSpeedText">0.22 rad/s</span>
+          </div>
+        </div>
+        <div class="manual-pad">
+          <span></span><button data-cmd="forward">W</button><span></span>
+          <button data-cmd="left">A</button><button class="warn" id="manualStopBtn" data-i18n="stopShort">停止</button><button data-cmd="right">D</button>
+          <span></span><button data-cmd="back">S</button><span></span>
+        </div>
+      </section>
+
+      <section class="panel view hidden" id="view-logs">
+        <div class="toolbar" style="justify-content: space-between;">
+          <h2 data-i18n="logs">日志</h2>
+          <div class="toolbar">
+            <select id="logName">
+              <option value="web">web</option>
+              <option value="mission">mission</option>
+              <option value="navigation">navigation</option>
+              <option value="manager">manager</option>
+              <option value="vlmapi">vlmapi</option>
+              <option value="vlm_pipeline">vlm pipeline</option>
+              <option value="vlm_dosod">vlm dosod</option>
+              <option value="grasp">grasp</option>
+              <option value="camera">camera</option>
+            </select>
+            <button id="loadLogBtn" data-i18n="loadLog">读取日志</button>
+          </div>
+        </div>
+        <pre class="logbox" id="logBox"></pre>
+      </section>
+    </main>
+
+    <aside class="right">
+      <section class="panel stack">
+        <h3 data-i18n="quickStatus">快速状态</h3>
+        <div class="status-list" id="quickStatus"></div>
+      </section>
+      <section class="panel stack" style="margin-top: 12px;">
+        <h3 data-i18n="quickActions">快捷操作</h3>
+        <button id="stopAllBtn" class="warn" data-i18n="stopAll">停止全部服务</button>
+        <button id="resetEstopBtn" data-i18n="resetEstop">解除软件急停</button>
+        <button id="zeroBtn" data-i18n="zeroVelocity">速度归零</button>
+      </section>
+      <section class="panel stack" style="margin-top: 12px;">
+        <h3 data-i18n="liveLog">实时日志</h3>
+        <pre class="logbox" id="liveLogBox" style="min-height: 180px; max-height: 260px;"></pre>
+      </section>
+    </aside>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+const I18N = {
+  zh: {
+    title:'垃圾分类机器人控制台', estop:'急停', overview:'总览',
+    hardware:'硬件状态', serviceState:'服务状态', mapNav:'地图导航', refreshMap:'刷新地图',
+    fillCurrent:'填入当前位置', sendInitial:'发布初始位姿', sendGoal:'发送目标点',
+    patrol:'巡逻', route:'路线', pointName:'点位名', resetRoute:'重置路线',
+    recordCurrent:'记录当前位置', reloadRoute:'重载路线', startPatrol:'开始巡逻',
+    pausePatrol:'暂停', resumePatrol:'继续', stopPatrol:'停止', vision:'视觉抓取',
+    enableGrasp:'启用自动抓取', disableGrasp:'关闭自动抓取', graspOnce:'刷新识别并抓取',
+    vlmProvider:'VLM接口', vlmModel:'模型', applyVlm:'应用模型', applyRestartVlm:'应用并重启VLM',
+    apiKeyLoaded:'密钥已加载', apiKeyMissing:'密钥未加载', localModel:'本地模型',
+    customVlm:'自定义VLM接口', providerName:'服务商名称', customModel:'模型名称',
+    baseUrl:'Base URL', apiKeyEnv:'密钥环境变量', apiKeyOptional:'API Key（可选，保存到 runtime/secrets/vlm.env）',
+    saveCustomVlm:'保存并应用', saveRestartCustomVlm:'保存并重启VLM',
+    services:'服务管理', manual:'手动控制', manualHint:'按住按钮持续低速控制，松开或页面失焦会自动归零。',
+    logs:'日志', loadLog:'读取日志', quickStatus:'快速状态', quickActions:'快捷操作',
+    stopAll:'停止全部服务', resetEstop:'解除软件急停', zeroVelocity:'速度归零',
+    navOverview:'总览', navMap:'地图', navPatrol:'巡逻', navVision:'视觉', navServices:'服务', navManual:'手动', navLogs:'日志',
+    graspPreparing:'正在刷新识别并启动抓取...',
+    connected:'已连接', disconnected:'未连接', liveVideo:'实时视频', liveLog:'实时日志', yawDeg:'航向角',
+    yes:'是', no:'否', start:'启动', stop:'停止', stopShort:'停止', online:'在线', offline:'离线',
+    active:'运行中', off:'关闭', waiting:'等待', noWaypoints:'暂无巡逻点', mapWaiting:'等待地图',
+    robot:'机器人', pose:'位姿', routeLabel:'路线', serviceReady:'服务就绪', serviceMissing:'服务缺失',
+    target:'目标', mission:'任务', autoGrasp:'自动抓取', linearSpeed:'线速度', angularSpeed:'角速度',
+    base:'底盘', lidar:'雷达', camera:'相机', depthCamera:'深度相机', depthAvoid:'深度避障', arm:'机械臂', mcu:'下位机',
+    navigation:'导航', navigationRun:'导航运行', navigationService:'导航服务', patrolService:'巡逻服务',
+    vlmapi:'VLMAPI', vlmRun:'VLM运行', vlmService:'VLM服务', graspService:'抓取服务',
+    directGraspService:'真实抓取服务', missionGraspService:'任务抓取入口',
+    navigationReady:'导航就绪', manualCmdTopic:'手动速度入口',
+    video:'视频', motionControl:'运动控制', armControl:'机械臂控制',
+    graspLive:'抓取执行',
+    map:'地图', amcl:'定位', grasp:'抓取', toolPan:'平移', toolInitial:'初始位姿', toolGoal:'导航目标',
+    toolPatrol:'巡逻点', resetView:'重置视图', newRoute:'新路线', newRouteBtn:'新建/切换路线',
+    addClickedPoint:'添加地图点', saveRoute:'保存路线', delete:'删除', clicked:'已选地图点',
+    connectRos:'连接ROS', reconnectRos:'重连', fitMap:'适配全图', cancelNav:'取消导航',
+    setInitialTool:'设置初始位姿', setGoalTool:'设置目标点',
+    rvizStart:'启动RViz', rvizRestart:'重启RViz', rvizStop:'停止RViz', rvizReload:'刷新窗口',
+    rvizOpen:'新窗口打开', rvizNative:'原生RViz', rvizUrl:'RViz地址', rvizConfig:'配置',
+    layers:'图层', nav2dStatus:'导航状态', topics:'话题', staticMap:'RViz地图',
+    robotLayer:'机器人位置', footprint:'Footprint', globalPath:'全局路径', localPath:'局部路径',
+    globalCostmap:'全局代价地图', localCostmap:'局部代价地图', scanLayer:'/scan', scanDepthLayer:'/scan_depth',
+    goalMarker:'目标点', rosConnected:'ROS已连接', rosDisconnected:'ROS未连接', noData:'无数据',
+    costmapOpacity:'代价地图透明度', lastError:'最后错误', navGoalState:'目标状态',
+    mapHelp:'鼠标滚轮缩放，右键或平移模式拖动地图。初始位姿/导航目标/巡逻点模式下点击地图填入坐标。',
+    routeSaved:'路线已保存'
+  },
+  en: {
+    title:'Trash Robot Console', estop:'E-STOP', overview:'Overview',
+    hardware:'Hardware', serviceState:'Services', mapNav:'Map Navigation', refreshMap:'Refresh map',
+    fillCurrent:'Fill current pose', sendInitial:'Publish initial pose', sendGoal:'Send goal',
+    patrol:'Patrol', route:'Route', pointName:'Point name', resetRoute:'Reset route',
+    recordCurrent:'Record current pose', reloadRoute:'Reload route', startPatrol:'Start patrol',
+    pausePatrol:'Pause', resumePatrol:'Resume', stopPatrol:'Stop', vision:'Vision and grasp',
+    enableGrasp:'Enable auto grasp', disableGrasp:'Disable auto grasp', graspOnce:'Refresh and grasp',
+    vlmProvider:'VLM provider', vlmModel:'Model', applyVlm:'Apply model', applyRestartVlm:'Apply and restart VLM',
+    apiKeyLoaded:'API key loaded', apiKeyMissing:'API key missing', localModel:'Local model',
+    customVlm:'Custom VLM provider', providerName:'Provider name', customModel:'Model name',
+    baseUrl:'Base URL', apiKeyEnv:'API key env', apiKeyOptional:'API key (optional, saved to runtime/secrets/vlm.env)',
+    saveCustomVlm:'Save and apply', saveRestartCustomVlm:'Save and restart VLM',
+    services:'Service Control', manual:'Manual control', manualHint:'Hold a button to move slowly. Release or tab blur sends zero velocity.',
+    logs:'Logs', loadLog:'Load log', quickStatus:'Quick Status', quickActions:'Quick Actions',
+    stopAll:'Stop all services', resetEstop:'Reset software E-STOP', zeroVelocity:'Zero velocity',
+    navOverview:'Overview', navMap:'Map', navPatrol:'Patrol', navVision:'Vision', navServices:'Services', navManual:'Manual', navLogs:'Logs',
+    graspPreparing:'Refreshing perception and starting grasp...',
+    connected:'Connected', disconnected:'Disconnected', liveVideo:'Live Video', liveLog:'Live Log', yawDeg:'Yaw deg',
+    yes:'Yes', no:'No', start:'Start', stop:'Stop', stopShort:'STOP', online:'Online', offline:'Offline',
+    active:'Active', off:'Off', waiting:'Waiting', noWaypoints:'No waypoints', mapWaiting:'Waiting for map',
+    robot:'Robot', pose:'Pose', routeLabel:'Route', serviceReady:'Ready', serviceMissing:'Missing',
+    target:'Target', mission:'Mission', autoGrasp:'Auto grasp', linearSpeed:'Linear speed', angularSpeed:'Angular speed',
+    base:'Base', lidar:'LiDAR', camera:'Camera', depthCamera:'Depth camera', depthAvoid:'Depth avoidance', arm:'Arm', mcu:'MCU',
+    navigation:'Navigation', navigationRun:'Navigation running', navigationService:'Navigation service', patrolService:'Patrol service',
+    vlmapi:'VLMAPI', vlmRun:'VLM running', vlmService:'VLM service', graspService:'Grasp service',
+    directGraspService:'Direct grasp service', missionGraspService:'Mission grasp entry',
+    navigationReady:'Navigation ready', manualCmdTopic:'Manual velocity topic',
+    video:'Video', motionControl:'Motion control', armControl:'Arm control',
+    graspLive:'Live grasp',
+    map:'Map', amcl:'AMCL', grasp:'Grasp', toolPan:'Pan', toolInitial:'Initial pose', toolGoal:'Nav goal',
+    toolPatrol:'Patrol point', resetView:'Reset view', newRoute:'New route', newRouteBtn:'Create/Switch route',
+    addClickedPoint:'Add map point', saveRoute:'Save route', delete:'Delete', clicked:'Clicked point',
+    connectRos:'Connect ROS', reconnectRos:'Reconnect', fitMap:'Fit map', cancelNav:'Cancel nav',
+    setInitialTool:'Set initial pose', setGoalTool:'Set goal',
+    rvizStart:'Start RViz', rvizRestart:'Restart RViz', rvizStop:'Stop RViz', rvizReload:'Reload frame',
+    rvizOpen:'Open window', rvizNative:'Native RViz', rvizUrl:'RViz URL', rvizConfig:'Config',
+    layers:'Layers', nav2dStatus:'Nav status', topics:'Topics', staticMap:'RViz map',
+    robotLayer:'Robot pose', footprint:'Footprint', globalPath:'Global path', localPath:'Local path',
+    globalCostmap:'Global costmap', localCostmap:'Local costmap', scanLayer:'/scan', scanDepthLayer:'/scan_depth',
+    goalMarker:'Goal marker', rosConnected:'ROS connected', rosDisconnected:'ROS disconnected', noData:'No data',
+    costmapOpacity:'Costmap opacity', lastError:'Last error', navGoalState:'Goal state',
+    mapHelp:'Mouse wheel zooms. Right drag or Pan mode drags the map. Initial/Goal/Patrol modes click to fill coordinates.',
+    routeSaved:'Route saved'
+  }
+};
+
+const state = {
+  lang:'zh', tab:'overview', status:null, routes:null, map:null, safety:true, mapLoaded:false,
+  view:{scale:1, offsetX:0, offsetY:0, fit:true},
+  drag:null,
+  poseDrag:null,
+  clicked:null,
+  ros:{
+    url:'',
+    ws:null,
+    connected:false,
+    reconnectTimer:null,
+    lastMessage:0,
+    data:{},
+    layers:{
+      map:true, robot:true, footprint:true, globalPath:true, localPath:true,
+      globalCostmap:false, localCostmap:true, scan:true, scanDepth:true, goal:true
+    },
+    opacity:{globalCostmap:0.40, localCostmap:0.40}
+  }
+};
+const tabs = [
+  ['overview','navOverview'], ['map','navMap'], ['patrol','navPatrol'], ['video','navVision'],
+  ['services','navServices'], ['manual','navManual'], ['logs','navLogs']
+];
+const DISPLAY_YAW_SIGN = -1;
+const DISPLAY_YAW_OFFSET_DEG = 90;
+const services = [
+  ['base','base'], ['camera','camera'], ['navigation','navigation'],
+  ['video','video'], ['arm','arm'], ['vlmapi','vlmapi'], ['grasp','graspLive']
+];
+const NATIVE_MAP_ENABLED = false;
+const t = key => I18N[state.lang][key] || key;
+const el = id => document.getElementById(id);
+
+function toast(msg) {
+  const box = el('toast');
+  box.textContent = msg;
+  box.classList.add('show');
+  setTimeout(() => box.classList.remove('show'), 3600);
+}
+async function api(path, opts={}) {
+  const res = await fetch(path, {headers:{'Content-Type':'application/json'}, ...opts});
+  const data = await res.json();
+  if (!res.ok || data.ok === false) throw new Error(data.message || data.detail || res.statusText);
+  return data;
+}
+function payload(extra={}) {
+  return JSON.stringify({ safety_confirm: true, ...extra });
+}
+function requireSafety() {
+  return true;
+}
+function setLang(lang) {
+  state.lang = lang;
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  el('langBtn').textContent = lang === 'zh' ? 'EN' : '中文';
+  document.querySelectorAll('[data-i18n]').forEach(node => node.textContent = t(node.dataset.i18n));
+  document.querySelectorAll('option[data-i18n]').forEach(node => node.textContent = t(node.dataset.i18n));
+  renderNav();
+  renderAll();
+}
+function renderNav() {
+  el('nav').innerHTML = tabs.map(([id,key]) =>
+    `<button class="navbtn ${state.tab===id?'active':''}" data-tab="${id}">${t(key)}</button>`
+  ).join('');
+  document.querySelectorAll('.navbtn').forEach(btn => btn.onclick = () => setTab(btn.dataset.tab));
+}
+function setTab(tab) {
+  state.tab = tab;
+  document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+  el(`view-${tab}`).classList.remove('hidden');
+  renderNav();
+  if (tab === 'logs') loadLog();
+  if (tab === 'logs') loadLiveLog();
+  if (tab === 'map' && NATIVE_MAP_ENABLED) { loadMap(); connectRosWs(); }
+  if (tab === 'video') loadVlmModels();
+  syncVideoStream(((state.status || {}).readiness || {}).video_ready ? (state.status || {}).video_url : '');
+}
+function badge(value) {
+  if (value === true || value > 0 || value === 'ONLINE' || value === 'ACTIVE' || value === 'ON') return `<span class="badge good">${t('online')}</span>`;
+  if (value === false || value === 0 || value === 'OFFLINE' || value === 'OFF') return `<span class="badge bad">${t('offline')}</span>`;
+  return `<span class="badge">${value ?? '--'}</span>`;
+}
+function statusRow(name, value) {
+  return `<div class="status-row"><span>${name}</span>${badge(value)}</div>`;
+}
+function setVideoElementSrc(img, url) {
+  if (!img) return;
+  const current = img.getAttribute('src') || '';
+  if (url) {
+    if (current !== url) img.src = url;
+    return;
+  }
+  if (current) {
+    img.removeAttribute('src');
+    try { img.load(); } catch (_) {}
+  }
+}
+function syncVideoStream(url) {
+  const activeUrl = url || '';
+  const showMini = state.tab === 'overview';
+  const showFeed = state.tab === 'video';
+  setVideoElementSrc(el('videoMini'), showMini ? activeUrl : '');
+  setVideoElementSrc(el('videoFeed'), showFeed ? activeUrl : '');
+}
+function renderStatus() {
+  const s = state.status || {};
+  const manager = s.manager || {};
+  const comps = manager.components || {};
+  const topics = s.topics || {};
+  const srv = s.services || {};
+  const ready = s.readiness || {};
+  const mission = s.mission || {};
+  const mode = (manager.system_state || {}).current_state || (manager.mode || {}).mode || 'IDLE';
+  el('modeBadge').textContent = mode;
+  el('modeBadge').className = `badge ${mode.includes('ESTOP') ? 'bad' : 'good'}`;
+  const pose = s.pose;
+  el('poseBadge').textContent = pose ? `${t('pose')} x ${pose.x.toFixed(2)} y ${pose.y.toFixed(2)} ${t('yawDeg')} ${pose.yaw_deg.toFixed(0)}` : `${t('pose')} --`;
+  el('routeBadge').textContent = mission.active_route ? `${t('routeLabel')} ${mission.active_route} #${mission.waypoint_count ?? '-'}` : `${t('routeLabel')} --`;
+  el('hardwareList').innerHTML = [
+    statusRow(t('base'), ready.base_ready),
+    statusRow(t('lidar'), ready.lidar_ready),
+    statusRow(t('camera'), ready.camera_ready),
+    statusRow(t('depthCamera'), ready.depth_ready),
+    statusRow(t('depthAvoid'), ready.depth_avoid_ready),
+    statusRow(t('arm'), ready.arm_ready),
+    statusRow(t('mcu'), topics['/odom'])
+  ].join('');
+  el('serviceList').innerHTML = [
+    statusRow(t('navigationRun'), comps.nav),
+    statusRow(t('navigationService'), srv.start_navigation),
+    statusRow(t('navigationReady'), ready.navigation_ready),
+    statusRow(t('patrolService'), ready.mission_ready),
+    statusRow(t('vlmRun'), comps.vlm),
+    statusRow(t('vlmService'), ready.vlm_ready),
+    statusRow(t('directGraspService'), ready.direct_grasp_ready),
+    statusRow(t('missionGraspService'), ready.mission_grasp_ready),
+    statusRow(t('video'), ready.video_ready),
+    statusRow(t('motionControl'), ready.base_ready),
+    statusRow(t('armControl'), ready.arm_ready)
+  ].join('');
+  el('quickStatus').innerHTML = [
+    statusRow('E-STOP', (manager.motion_lock || {}).estop_active ? 'ACTIVE' : 'OFF'),
+    statusRow(t('map'), topics['/map']),
+    statusRow(t('amcl'), topics['/amcl_pose']),
+    statusRow(t('grasp'), comps.grasp),
+    statusRow(t('manual'), (s.manual || {}).enabled ? 'ACTIVE' : 'OFF'),
+    statusRow(t('manualCmdTopic'), (s.manual || {}).cmd_topic || '--')
+  ].join('');
+  el('visionInfo').innerHTML = [
+    statusRow(t('target'), (s.target || {}).label || '--'),
+    statusRow(t('vlmProvider'), (state.vlm || {}).active_provider || '--'),
+    statusRow(t('mission'), mission.current_state || mission.state || '--'),
+    statusRow(t('autoGrasp'), mission.grasp_enabled ? 'ON' : 'OFF')
+  ].join('');
+  syncVideoStream(ready.video_ready ? s.video_url : '');
+}
+function renderRoutes() {
+  const data = (state.routes || {}).data || {};
+  const active = data.active_route || 'office_loop';
+  const names = Object.keys(data.routes || {});
+  const selected = currentRoute();
+  if (!names.includes(selected)) names.push(selected);
+  el('routeSelect').innerHTML = names.map(name => `<option value="${name}">${name}</option>`).join('');
+  el('routeSelect').value = selected || active;
+  el('newRouteName').value = el('newRouteName').value || selected || active;
+  const points = currentWaypoints();
+  el('routeList').innerHTML = points.length ? points.map((p, i) =>
+    `<div class="route-point"><strong>${i+1}</strong><span>${p.name}: x=${Number(p.x).toFixed(2)} y=${Number(p.y).toFixed(2)} ${t('yawDeg')}=${Number(p.yaw_deg || 0).toFixed(0)}</span><button data-del-point="${i}">${t('delete')}</button></div>`
+  ).join('') : `<span class="muted">${t('noWaypoints')}</span>`;
+  document.querySelectorAll('[data-del-point]').forEach(btn => {
+    btn.onclick = () => deletePoint(Number(btn.dataset.delPoint));
+  });
+  drawMap();
+}
+function renderServices() {
+  el('serviceControls').innerHTML = services.map(([key,labelKey]) => `
+    <div class="panel">
+      <h3>${t(labelKey)}</h3>
+      <div class="toolbar">
+        <button data-service="${key}" data-action="start">${t('start')}</button>
+        <button data-service="${key}" data-action="stop">${t('stop')}</button>
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('[data-service]').forEach(btn => {
+    btn.onclick = () => serviceAction(btn.dataset.service, btn.dataset.action);
+  });
+}
+function defaultRosWsUrl() {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${proto}//${location.host}/ws/nav2d`;
+}
+function renderLayerControls() {
+  const box = el('layerControls');
+  if (!box) return;
+  const items = [
+    ['map','staticMap'], ['robot','robotLayer'], ['footprint','footprint'], ['globalPath','globalPath'],
+    ['localPath','localPath'], ['globalCostmap','globalCostmap'], ['localCostmap','localCostmap'],
+    ['scan','scanLayer'], ['scanDepth','scanDepthLayer'], ['goal','goalMarker']
+  ];
+  box.innerHTML = items.map(([key,label]) =>
+    `<label class="layer-row"><input type="checkbox" data-layer="${key}" ${state.ros.layers[key] ? 'checked' : ''}><span>${t(label)}</span></label>`
+  ).join('') + `
+    <label>${t('costmapOpacity')}</label>
+    <input type="range" min="0.15" max="0.85" step="0.05" data-opacity="localCostmap" value="${state.ros.opacity.localCostmap}">
+    <input type="range" min="0.15" max="0.85" step="0.05" data-opacity="globalCostmap" value="${state.ros.opacity.globalCostmap}">
+  `;
+  box.querySelectorAll('[data-layer]').forEach(input => {
+    input.onchange = () => {
+      state.ros.layers[input.dataset.layer] = input.checked;
+      drawMap();
+    };
+  });
+  box.querySelectorAll('[data-opacity]').forEach(input => {
+    input.oninput = () => {
+      state.ros.opacity[input.dataset.opacity] = Number(input.value);
+      drawMap();
+    };
+  });
+}
+function boolText(v) { return v ? t('yes') : t('no'); }
+function renderNav2dStatus() {
+  const data = state.ros.data || {};
+  const status = data.status || {};
+  const pose = data.pose || state.status?.pose;
+  const goal = data.goal || {};
+  const feedback = goal.feedback || {};
+  const rows = [
+    ['ROS', state.ros.connected ? t('connected') : t('disconnected')],
+    [t('navigation'), boolText(status.nav_active)],
+    [t('pose'), pose ? `${Number(pose.x).toFixed(2)}, ${Number(pose.y).toFixed(2)}, ${Number(pose.yaw_deg).toFixed(0)}°` : '--'],
+    [t('target'), data.goal ? `${Number(data.goal.x).toFixed(2)}, ${Number(data.goal.y).toFixed(2)}, ${Number(data.goal.yaw_deg).toFixed(0)}°` : '--'],
+    [t('navGoalState'), goal.status_text || goal.state || status.nav_status?.latest_status_text || '--'],
+    ['Remain', feedback.distance_remaining !== undefined ? `${Number(feedback.distance_remaining).toFixed(2)} m` : '--'],
+    [t('globalPath'), boolText(status.has_global_path)],
+    [t('localPath'), boolText(status.has_local_path)],
+    [t('lastError'), status.last_error || '--']
+  ];
+  const topicRows = [
+    ['/map', boolText(status.has_map || !!data.map)],
+    ['/map_occupied_marker', boolText(status.has_map_marker || !!data.map_marker?.markers?.length)],
+    ['TF map->base_link', boolText(status.has_tf)],
+    ['/global_costmap/costmap', boolText(status.has_global_costmap || !!data.global_costmap)],
+    ['/local_costmap/costmap', boolText(status.has_local_costmap || !!data.local_costmap)],
+    ['/scan', boolText(status.has_scan || !!data.scan?.points?.length)],
+    ['/scan_depth', boolText(status.has_scan_depth || !!data.scan_depth?.points?.length)]
+  ];
+  if (el('nav2dStatus')) el('nav2dStatus').innerHTML = rows.map(([k,v]) => `<div><span>${k}</span><strong>${v}</strong></div>`).join('');
+  if (el('nav2dTopics')) el('nav2dTopics').innerHTML = topicRows.map(([k,v]) => `<div><span>${k}</span><strong>${v}</strong></div>`).join('');
+  if (el('rosInfo')) el('rosInfo').textContent = state.ros.connected ? `${t('rosConnected')} ${Math.max(0, (Date.now() - state.ros.lastMessage) / 1000).toFixed(1)}s` : t('rosDisconnected');
+}
+function connectRosWs(force=false) {
+  const input = el('rosWsUrl');
+  const url = (input?.value || state.ros.url || defaultRosWsUrl()).trim();
+  if (input && !input.value) input.value = url;
+  if (!force && state.ros.ws && state.ros.connected && state.ros.url === url) return;
+  if (state.ros.ws) {
+    try { state.ros.ws.close(); } catch {}
+  }
+  state.ros.url = url;
+  const ws = new WebSocket(url);
+  state.ros.ws = ws;
+  ws.onopen = () => {
+    state.ros.connected = true;
+    state.ros.lastMessage = Date.now();
+    toast(t('rosConnected'));
+    renderNav2dStatus();
+  };
+  ws.onmessage = evt => {
+    state.ros.lastMessage = Date.now();
+    let msg;
+    try { msg = JSON.parse(evt.data); } catch { return; }
+    if (msg.op === 'command_result') {
+      toast(msg.message || (msg.ok ? 'OK' : 'ERROR'));
+      el('lastMsg').textContent = msg.message || '';
+      return;
+    }
+    if (msg.op !== 'nav2d') return;
+    const data = state.ros.data;
+    ['map','map_marker','global_costmap','local_costmap','global_path','local_path','scan','scan_depth','footprint','goal','status','pose','seq'].forEach(key => {
+      if (msg[key] !== undefined) data[key] = (key.includes('costmap') || key === 'map') ? {ok:true, ...msg[key]} : msg[key];
+    });
+    if (msg.map) {
+      state.map = {ok:true, ...msg.map};
+      state.mapLoaded = true;
+    }
+    drawMap();
+    renderNav2dStatus();
+  };
+  ws.onclose = () => {
+    state.ros.connected = false;
+    renderNav2dStatus();
+    if (!state.ros.reconnectTimer) {
+      state.ros.reconnectTimer = setTimeout(() => {
+        state.ros.reconnectTimer = null;
+        connectRosWs(true);
+      }, 1500);
+    }
+  };
+  ws.onerror = () => {
+    state.ros.connected = false;
+    renderNav2dStatus();
+  };
+}
+function rosCommand(op, payload={}) {
+  if (!state.ros.ws || state.ros.ws.readyState !== WebSocket.OPEN) {
+    toast(t('rosDisconnected'));
+    connectRosWs(true);
+    return false;
+  }
+  state.ros.ws.send(JSON.stringify({op, payload:{safety_confirm:true, ...payload}}));
+  return true;
+}
+function renderVlmModels() {
+  const providerSelect = el('vlmProviderSelect');
+  const modelSelect = el('vlmModelSelect');
+  const modelOptions = el('vlmModelOptions');
+  const info = el('vlmModelInfo');
+  if (!providerSelect || !modelSelect || !info) return;
+  const activeElement = document.activeElement;
+  const editingProvider = activeElement === providerSelect;
+  const editingModel = activeElement === modelSelect;
+  const editingCustom = ['customProviderName', 'customModelName', 'customBaseUrl', 'customApiKeyEnv', 'customApiKey']
+    .some(id => activeElement === el(id));
+  const previousProviderValue = providerSelect.value;
+  const providers = (state.vlm || {}).providers || [];
+  if (!providers.length) {
+    if (!editingProvider) providerSelect.innerHTML = '';
+    if (!editingModel) modelSelect.value = '';
+    if (modelOptions) modelOptions.innerHTML = '';
+    info.textContent = '--';
+    return;
+  }
+  const active = previousProviderValue || (state.vlm || {}).active_provider || providers[0].name;
+  if (!editingProvider) {
+    providerSelect.innerHTML = providers.map(p =>
+      `<option value="${p.name}">${p.name}${p.enabled ? '' : ' (off)'}</option>`
+    ).join('');
+    providerSelect.value = providers.some(p => p.name === active) ? active : providers[0].name;
+  }
+  const provider = providers.find(p => p.name === providerSelect.value) || providers[0];
+  const models = provider.model_candidates && provider.model_candidates.length ? provider.model_candidates : [provider.model || ''];
+  if (modelOptions) {
+    modelOptions.innerHTML = models.filter(Boolean).map(model => `<option value="${model}"></option>`).join('');
+  }
+  if (!editingModel) modelSelect.value = provider.model || models[0] || '';
+  if (provider.local) {
+    info.textContent = `${provider.name}: ${t('localModel')}`;
+  } else {
+    info.textContent = `${provider.name}: ${provider.api_key_env || 'API_KEY'} ${provider.api_key_present ? t('apiKeyLoaded') : t('apiKeyMissing')}`;
+  }
+  if (!editingCustom) {
+    if (el('customProviderName')) el('customProviderName').value = provider.name || '';
+    if (el('customModelName')) el('customModelName').value = provider.model || models[0] || '';
+    if (el('customBaseUrl')) el('customBaseUrl').value = provider.base_url || '';
+    if (el('customApiKeyEnv')) el('customApiKeyEnv').value = provider.api_key_env || '';
+  }
+}
+async function applyVlmModel(restart=false) {
+  const provider = el('vlmProviderSelect').value;
+  const model = el('vlmModelSelect').value;
+  await action('/api/vlm/select', {provider, model, restart}, false);
+  await loadVlmModels();
+}
+async function saveCustomVlmProvider(restart=false) {
+  await action('/api/vlm/provider', {
+    provider: el('customProviderName').value,
+    model: el('customModelName').value,
+    base_url: el('customBaseUrl').value,
+    api_key_env: el('customApiKeyEnv').value,
+    api_key: el('customApiKey').value,
+    activate: true,
+    restart
+  }, false);
+  if (el('customApiKey')) el('customApiKey').value = '';
+  await loadVlmModels();
+}
+function currentRoute() {
+  const data = (state.routes || {}).data || {};
+  return el('routeSelect')?.value || el('newRouteName')?.value || data.active_route || 'office_loop';
+}
+function currentWaypoints() {
+  const data = (state.routes || {}).data || {};
+  return ((((data.routes || {})[currentRoute()] || {}).waypoints) || []).map(p => ({...p}));
+}
+function setCurrentWaypoints(points) {
+  const data = (state.routes || {}).data || {active_route:'office_loop', routes:{}};
+  state.routes = state.routes || {ok:true, data};
+  state.routes.data = data;
+  data.routes = data.routes || {};
+  data.routes[currentRoute()] = data.routes[currentRoute()] || {loop:true, waypoints:[]};
+  data.routes[currentRoute()].waypoints = points;
+  data.active_route = currentRoute();
+}
+function renderAll() {
+  renderStatus();
+  renderRoutes();
+  renderServices();
+  renderVlmModels();
+  renderLayerControls();
+  renderNav2dStatus();
+  drawMap();
+}
+async function refreshStatus() {
+  try {
+    state.status = await api('/api/status');
+    el('connDot').className = 'dot good';
+    el('connText').textContent = t('connected');
+    renderAll();
+  } catch (err) {
+    el('connDot').className = 'dot bad';
+    el('connText').textContent = t('disconnected');
+  }
+}
+async function refreshRoutes() {
+  try {
+    state.routes = await api('/api/routes');
+    renderRoutes();
+  } catch (err) { toast(err.message); }
+}
+async function loadVlmModels() {
+  try {
+    state.vlm = await api('/api/vlm/models');
+    renderVlmModels();
+  } catch (err) { toast(err.message); }
+}
+async function loadMap() {
+  try {
+    state.map = await api('/api/map');
+    state.mapLoaded = !!state.map.ok;
+    drawMap();
+  } catch (err) { drawMap(); }
+}
+function activeMap() {
+  return state.ros?.data?.map || state.map;
+}
+function worldToCanvas(x, y, canvas, map) {
+  const ox = map.origin?.x || 0, oy = map.origin?.y || 0, res = map.resolution || 1;
+  const yaw = Number(map.origin?.yaw_deg || 0) * Math.PI / 180;
+  const dx = x - ox;
+  const dy = y - oy;
+  const mx = (dx * Math.cos(yaw) + dy * Math.sin(yaw)) / res;
+  const gy = (-dx * Math.sin(yaw) + dy * Math.cos(yaw)) / res;
+  const my = map.height - gy;
+  const tr = mapTransform(canvas, map);
+  return [tr.x + mx * tr.scale, tr.y + my * tr.scale];
+}
+function mapToScreen(x, y, canvas, map) {
+  return worldToCanvas(x, y, canvas, map);
+}
+function canvasToWorld(px, py, canvas, map) {
+  const tr = mapTransform(canvas, map);
+  const mx = (px - tr.x) / tr.scale;
+  const my = (py - tr.y) / tr.scale;
+  const ox = map.origin?.x || 0, oy = map.origin?.y || 0, res = map.resolution || 1;
+  const yaw = Number(map.origin?.yaw_deg || 0) * Math.PI / 180;
+  const gx = mx * res;
+  const gy = (map.height - my) * res;
+  return {
+    x: ox + gx * Math.cos(yaw) - gy * Math.sin(yaw),
+    y: oy + gx * Math.sin(yaw) + gy * Math.cos(yaw)
+  };
+}
+function screenToMap(px, py, canvas, map) {
+  return canvasToWorld(px, py, canvas, map);
+}
+function normalizeYawDeg(deg) {
+  let out = Number(deg) || 0;
+  while (out > 180) out -= 360;
+  while (out <= -180) out += 360;
+  return out;
+}
+function yawBetweenWorld(a, b) {
+  return normalizeYawDeg(Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI);
+}
+function rosYawToDisplayYawDeg(yawDeg) {
+  return normalizeYawDeg((Number(yawDeg) || 0) * DISPLAY_YAW_SIGN + DISPLAY_YAW_OFFSET_DEG);
+}
+function displayYawToRosYawDeg(yawDeg) {
+  return normalizeYawDeg(((Number(yawDeg) || 0) - DISPLAY_YAW_OFFSET_DEG) / DISPLAY_YAW_SIGN);
+}
+function setSelectedPose(x, y, yawDeg, arrowLenPx=34, kind=null) {
+  const pose = {x, y, yaw_deg: normalizeYawDeg(yawDeg), arrow_len_px: arrowLenPx, kind: kind || state.clicked?.kind || el('mapTool')?.value || 'goal'};
+  state.clicked = pose;
+  el('poseX').value = pose.x.toFixed(3);
+  el('poseY').value = pose.y.toFixed(3);
+  el('poseYaw').value = pose.yaw_deg.toFixed(1);
+}
+function toolStyle(kind) {
+  if (kind === 'initial') return {color:'#0ea5e9', label:t('toolInitial')};
+  if (kind === 'patrol') return {color:'#188a52', label:t('toolPatrol')};
+  return {color:'#d97706', label:t('toolGoal')};
+}
+function setMapTool(kind) {
+  if (el('mapTool')) el('mapTool').value = kind;
+  ['setInitialToolBtn','setGoalToolBtn'].forEach(id => {
+    const btn = el(id);
+    if (!btn) return;
+    btn.classList.remove('primary');
+  });
+  if (kind === 'initial' && el('setInitialToolBtn')) el('setInitialToolBtn').classList.add('primary');
+  if (kind === 'goal' && el('setGoalToolBtn')) el('setGoalToolBtn').classList.add('primary');
+}
+function drawPoseArrow(ctx, x, y, yawDeg, color, label='', length=34) {
+  const yaw = rosYawToDisplayYawDeg(yawDeg) * Math.PI / 180;
+  const len = Math.max(18, Number(length) || 34);
+  const endX = x + len * Math.cos(yaw);
+  const endY = y - len * Math.sin(yaw);
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x, y, 6, 0, Math.PI * 2);
+  ctx.fill();
+  const head = 9;
+  const a = Math.atan2(endY - y, endX - x);
+  ctx.beginPath();
+  ctx.moveTo(endX, endY);
+  ctx.lineTo(endX - head * Math.cos(a - Math.PI / 6), endY - head * Math.sin(a - Math.PI / 6));
+  ctx.lineTo(endX - head * Math.cos(a + Math.PI / 6), endY - head * Math.sin(a + Math.PI / 6));
+  ctx.closePath();
+  ctx.fill();
+  if (label) {
+    ctx.font = '12px ui-monospace, SFMono-Regular, Menlo, monospace';
+    ctx.fillText(label, endX + 8, endY - 8);
+  }
+  ctx.restore();
+}
+function makeOccupancyCanvas(grid, mode='map') {
+  if (!grid?.data?.length) return null;
+  const off = document.createElement('canvas');
+  off.width = grid.width;
+  off.height = grid.height;
+  const octx = off.getContext('2d');
+  const img = octx.createImageData(grid.width, grid.height);
+  for (let y=0; y<grid.height; y++) {
+    for (let x=0; x<grid.width; x++) {
+    const i = y * grid.width + x;
+    const dst = ((grid.height - 1 - y) * grid.width + x) * 4;
+    const v = Number(grid.data[i]);
+    let r, g, b, a;
+    if (mode === 'costmap') {
+      const cost = Math.max(0, Math.min(100, v));
+      r = 255; g = Math.max(30, 190 - cost * 1.4); b = 30; a = v < 1 ? 0 : Math.max(24, Math.min(155, cost * 1.6));
+    } else {
+      const c = v < 0 ? 48 : (v > 65 ? 18 : (v > 0 ? 118 : 228));
+      r = c; g = c; b = c; a = 255;
+    }
+    img.data[dst] = r; img.data[dst+1] = g; img.data[dst+2] = b; img.data[dst+3] = a;
+    }
+  }
+  octx.putImageData(img, 0, 0);
+  return off;
+}
+function drawGridImage(ctx, canvas, baseMap, grid, mode='map', alpha=null) {
+  const off = makeOccupancyCanvas(grid, mode);
+  if (!off) return;
+  const origin = grid.origin || {x:0,y:0,yaw_deg:0};
+  const yaw = Number(origin.yaw_deg || 0) * Math.PI / 180;
+  const widthM = grid.width * grid.resolution;
+  const heightM = grid.height * grid.resolution;
+  const xAxis = [Math.cos(yaw), Math.sin(yaw)];
+  const yAxis = [-Math.sin(yaw), Math.cos(yaw)];
+  const topLeftWorld = [origin.x + yAxis[0] * heightM, origin.y + yAxis[1] * heightM];
+  const topRightWorld = [topLeftWorld[0] + xAxis[0] * widthM, topLeftWorld[1] + xAxis[1] * widthM];
+  const bottomLeftWorld = [origin.x, origin.y];
+  const topLeft = mapToScreen(topLeftWorld[0], topLeftWorld[1], canvas, baseMap);
+  const topRight = mapToScreen(topRightWorld[0], topRightWorld[1], canvas, baseMap);
+  const bottomLeft = mapToScreen(bottomLeftWorld[0], bottomLeftWorld[1], canvas, baseMap);
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.globalAlpha = alpha ?? (mode === 'costmap' ? 0.40 : 1.0);
+  ctx.transform(
+    (topRight[0] - topLeft[0]) / off.width,
+    (topRight[1] - topLeft[1]) / off.width,
+    (bottomLeft[0] - topLeft[0]) / off.height,
+    (bottomLeft[1] - topLeft[1]) / off.height,
+    topLeft[0],
+    topLeft[1],
+  );
+  ctx.drawImage(off, 0, 0);
+  ctx.restore();
+}
+function drawPath(ctx, canvas, map, path, color, width=3) {
+  const points = path?.points || [];
+  if (points.length < 2) return;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  points.forEach((p, i) => {
+    const [x,y] = worldToCanvas(Number(p[0]), Number(p[1]), canvas, map);
+    if (i === 0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  ctx.restore();
+}
+function drawScan(ctx, canvas, map, scan, color) {
+  const points = scan?.points || [];
+  if (!points.length) return;
+  ctx.save();
+  ctx.fillStyle = color;
+  points.forEach(p => {
+    const [x,y] = worldToCanvas(Number(p[0]), Number(p[1]), canvas, map);
+    ctx.fillRect(x - 1.2, y - 1.2, 2.4, 2.4);
+  });
+  ctx.restore();
+}
+function drawMapMarker(ctx, canvas, map, markerPayload) {
+  const markers = markerPayload?.markers || [];
+  if (!markers.length) return false;
+  const tr = mapTransform(canvas, map);
+  ctx.save();
+  markers.forEach(marker => {
+    const points = marker.points || [];
+    if (!points.length) return;
+    const color = marker.color || {r:.92,g:.92,b:.88,a:.95};
+    const rgba = `rgba(${Math.round((color.r ?? 1) * 255)},${Math.round((color.g ?? 1) * 255)},${Math.round((color.b ?? 1) * 255)},${Math.max(0, Math.min(1, color.a ?? .95))})`;
+    const size = Math.max(1.2, Number(marker.scale?.x || 0.05) / (map.resolution || 0.05) * tr.scale);
+    ctx.fillStyle = rgba;
+    ctx.strokeStyle = rgba;
+    ctx.lineWidth = Math.max(1, size);
+    if (marker.type === 4 || marker.type === 5) {
+      ctx.beginPath();
+      points.forEach((p, i) => {
+        const [x,y] = mapToScreen(Number(p[0]), Number(p[1]), canvas, map);
+        if (i === 0 || marker.type === 5 && i % 2 === 0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+      return;
+    }
+    points.forEach(p => {
+      const [x,y] = mapToScreen(Number(p[0]), Number(p[1]), canvas, map);
+      ctx.fillRect(x - size / 2, y - size / 2, size, size);
+    });
+  });
+  ctx.restore();
+  return true;
+}
+function footprintPointsFromPose(pose) {
+  if (!pose) return [];
+  const base = [[0.30, 0.22], [0.30, -0.22], [-0.20, -0.22], [-0.20, 0.22]];
+  const yaw = Number(pose.yaw_deg || 0) * Math.PI / 180;
+  const c = Math.cos(yaw), s = Math.sin(yaw);
+  return base.map(([x,y]) => [pose.x + x * c - y * s, pose.y + x * s + y * c]);
+}
+function drawFootprint(ctx, canvas, map, pose, footprint=null) {
+  const pts = footprint?.points?.length ? footprint.points : footprintPointsFromPose(pose);
+  if (!pts.length) return;
+  ctx.save();
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  pts.forEach((p, i) => {
+    const [x,y] = mapToScreen(p[0], p[1], canvas, map);
+    if (i === 0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.closePath();
+  ctx.stroke();
+  ctx.restore();
+}
+function mapTransform(canvas, map) {
+  const fit = Math.min(canvas.width / map.width, canvas.height / map.height);
+  if (state.view.fit) {
+    state.view.scale = fit;
+    state.view.offsetX = (canvas.width - map.width * fit) / 2;
+    state.view.offsetY = (canvas.height - map.height * fit) / 2;
+    state.view.fit = false;
+  }
+  return {scale: state.view.scale || fit, x: state.view.offsetX || 0, y: state.view.offsetY || 0};
+}
+function resetMapView() {
+  state.view.fit = true;
+  drawMap();
+}
+function drawMap() {
+  const canvas = el('mapCanvas');
+  if (!canvas) return;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = Math.max(480, Math.floor(rect.width));
+  canvas.height = Math.max(360, Math.floor(rect.height));
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#111827';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  const rosData = state.ros.data || {};
+  const map = activeMap();
+  if (map && map.ok && map.data) {
+    const tr = mapTransform(canvas, map);
+    if (state.ros.layers.map) {
+      const drewRvizMap = drawMapMarker(ctx, canvas, map, rosData.map_marker);
+      if (!drewRvizMap) drawGridImage(ctx, canvas, map, map, 'map', 1.0);
+    }
+    el('mapInfo').textContent = `${map.source_width}x${map.source_height} res ${map.resolution.toFixed(2)}m`;
+  } else {
+    ctx.strokeStyle = '#263445';
+    for (let x=0; x<canvas.width; x+=32) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
+    for (let y=0; y<canvas.height; y+=32) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
+    el('mapInfo').textContent = t('mapWaiting');
+  }
+  if (map?.ok && state.ros.layers.globalCostmap && rosData.global_costmap) {
+    drawGridImage(ctx, canvas, map, rosData.global_costmap, 'costmap', state.ros.opacity.globalCostmap);
+  }
+  if (map?.ok && state.ros.layers.localCostmap && rosData.local_costmap) {
+    drawGridImage(ctx, canvas, map, rosData.local_costmap, 'costmap', state.ros.opacity.localCostmap);
+  }
+  if (map?.ok && state.ros.layers.globalPath) drawPath(ctx, canvas, map, rosData.global_path, '#2563eb', 3);
+  if (map?.ok && state.ros.layers.localPath) drawPath(ctx, canvas, map, rosData.local_path, '#22c55e', 3);
+  if (map?.ok && state.ros.layers.scan) drawScan(ctx, canvas, map, rosData.scan, '#f8fafc');
+  if (map?.ok && state.ros.layers.scanDepth) drawScan(ctx, canvas, map, rosData.scan_depth, '#f97316');
+  const pose = rosData.pose || state.status?.pose;
+  if (pose && map?.ok && state.ros.layers.footprint) drawFootprint(ctx, canvas, map, pose, rosData.footprint);
+  if (pose && map?.ok && state.ros.layers.robot) {
+    const [x,y] = worldToCanvas(pose.x, pose.y, canvas, map);
+    drawPoseArrow(ctx, x, y, Number(pose.yaw_deg || 0) + 90, '#1f6feb', '', 30);
+    el('robotInfo').textContent = `${t('robot')} x=${pose.x.toFixed(2)} y=${pose.y.toFixed(2)} ${t('yawDeg')}=${pose.yaw_deg.toFixed(0)}`;
+  }
+  const points = currentWaypoints();
+  if (map?.ok) {
+    ctx.fillStyle = '#188a52';
+    ctx.strokeStyle = '#188a52';
+    points.forEach((p, i) => {
+      const [x,y] = worldToCanvas(Number(p.x), Number(p.y), canvas, map);
+      drawPoseArrow(ctx, x, y, Number(p.yaw_deg || 0), '#188a52', p.name || `p${i+1}`, 24);
+      if (i > 0) {
+        const prev = worldToCanvas(Number(points[i-1].x), Number(points[i-1].y), canvas, map);
+        ctx.strokeStyle = '#188a52';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(x,y); ctx.stroke();
+      }
+    });
+  }
+  const goal = state.clicked || rosData.goal;
+  if (goal && map?.ok && (state.clicked || state.ros.layers.goal)) {
+    const [cx, cy] = worldToCanvas(goal.x, goal.y, canvas, map);
+    const style = toolStyle(goal.kind || 'goal');
+    drawPoseArrow(ctx, cx, cy, goal.yaw_deg || 0, style.color, `${style.label} ${Number(goal.yaw_deg || 0).toFixed(0)}°`, goal.arrow_len_px || 34);
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillText(`${style.label} x=${Number(goal.x).toFixed(2)} y=${Number(goal.y).toFixed(2)}`, cx + 12, cy + 18);
+    if (el('goalInfo')) el('goalInfo').textContent = `${style.label} x=${Number(goal.x).toFixed(2)} y=${Number(goal.y).toFixed(2)} yaw=${Number(goal.yaw_deg || 0).toFixed(0)}`;
+  } else if (el('goalInfo')) {
+    el('goalInfo').textContent = 'goal --';
+  }
+  renderNav2dStatus();
+}
+async function action(path, body={}, motion=false) {
+  void motion;
+  try {
+    if (path === '/api/grasp/once') toast(t('graspPreparing'));
+    const res = await api(path, {method:'POST', body: payload(body)});
+    toast(res.message || 'OK');
+    el('lastMsg').textContent = res.message || 'OK';
+    await refreshStatus();
+    await refreshRoutes();
+  } catch (err) {
+    toast(err.message);
+    el('lastMsg').textContent = err.message;
+  }
+}
+function rvizWebUrl() {
+  const host = window.location.hostname || '192.168.1.121';
+  return `http://${host}:6080/vnc.html?autoconnect=1&resize=remote&path=websockify`;
+}
+function refreshRvizFrame(force=false) {
+  const url = rvizWebUrl();
+  const link = el('rvizUrlText');
+  if (link) link.innerHTML = `<a href="${url}" target="_blank" rel="noopener">:6080</a>`;
+  const frame = el('rvizFrame');
+  if (!frame) return;
+  if (force || !frame.src) {
+    frame.src = `${url}&t=${Date.now()}`;
+  }
+}
+async function rvizWebAction(act) {
+  try {
+    toast(`RViz ${act}...`);
+    const res = await api(`/api/rviz_web/${act}`, {method:'POST', body: payload({})});
+    toast(res.message || 'OK');
+    el('lastMsg').textContent = res.message || 'OK';
+    if (act === 'start' || act === 'restart' || act === 'status') refreshRvizFrame(true);
+    await refreshStatus();
+  } catch (err) {
+    toast(err.message);
+    el('lastMsg').textContent = err.message;
+  }
+}
+async function serviceAction(component, act) {
+  if (component === 'vlmapi') {
+    if (act === 'start') {
+      await action('/api/manager/grasp/start', {live: false}, false);
+    } else {
+      await action('/api/manager/grasp/stop', {}, false);
+    }
+    return;
+  }
+  const motion = (component === 'grasp' || component === 'navigation') && act === 'start';
+  await action(`/api/manager/${component}/${act}`, {live: component === 'grasp'}, motion);
+}
+function nextPointName() {
+  const points = currentWaypoints();
+  return `p${points.length + 1}`;
+}
+function useClickedPose() {
+  if (!state.clicked) return toast(t('clicked') + ' --');
+  el('poseX').value = state.clicked.x.toFixed(3);
+  el('poseY').value = state.clicked.y.toFixed(3);
+  el('poseYaw').value = state.clicked.yaw_deg.toFixed(1);
+}
+async function addClickedPoint() {
+  if (!state.clicked) return toast(t('clicked') + ' --');
+  const name = el('pointName').value || nextPointName();
+  await action('/api/routes/add_waypoint', {
+    route: currentRoute(),
+    name,
+    x: state.clicked.x,
+    y: state.clicked.y,
+    yaw_deg: state.clicked.yaw_deg,
+    activate: true
+  });
+}
+async function saveCurrentRoute() {
+  await action('/api/routes/save', {route: currentRoute(), waypoints: currentWaypoints(), loop: true, activate: true});
+}
+async function newRoute() {
+  const name = (el('newRouteName').value || '').trim();
+  if (!name) return;
+  state.routes = state.routes || {ok:true, data:{active_route:name, routes:{}}};
+  state.routes.data = state.routes.data || {active_route:name, routes:{}};
+  state.routes.data.routes = state.routes.data.routes || {};
+  state.routes.data.routes[name] = state.routes.data.routes[name] || {loop:true, waypoints:[]};
+  state.routes.data.active_route = name;
+  renderRoutes();
+  await action('/api/routes/set_active', {route:name});
+}
+async function deletePoint(index) {
+  try {
+    const res = await api('/api/routes/delete_waypoint', {method:'POST', body: JSON.stringify({route: currentRoute(), index})});
+    toast(res.message || 'OK');
+    await refreshRoutes();
+  } catch (err) { toast(err.message); }
+}
+function fillPose() {
+  const p = state.status?.pose;
+  if (!p) return toast(`${t('pose')} --`);
+  el('poseX').value = Number(p.x).toFixed(3);
+  el('poseY').value = Number(p.y).toFixed(3);
+  el('poseYaw').value = Number(p.yaw_deg).toFixed(1);
+}
+async function loadLog() {
+  try {
+    const data = await api(`/api/logs?name=${encodeURIComponent(el('logName').value)}&lines=160`);
+    el('logBox').textContent = data.text || '';
+  } catch (err) { el('logBox').textContent = err.message; }
+}
+async function loadLiveLog() {
+  try {
+    const data = await api('/api/logs?name=mission&lines=80');
+    el('liveLogBox').textContent = data.text || '';
+    el('liveLogBox').scrollTop = el('liveLogBox').scrollHeight;
+  } catch (err) {
+    el('liveLogBox').textContent = err.message;
+  }
+}
+function bindManual() {
+  let timer = null;
+  function updateSpeedText() {
+    el('linearSpeedText').textContent = `${Number(el('linearSpeed').value).toFixed(2)} m/s`;
+    el('angularSpeedText').textContent = `${Number(el('angularSpeed').value).toFixed(2)} rad/s`;
+  }
+  function vector(cmd) {
+    const lin = Number(el('linearSpeed').value);
+    const ang = Number(el('angularSpeed').value);
+    return {
+      forward:[lin,0],
+      back:[-lin,0],
+      left:[0,ang],
+      right:[0,-ang]
+    }[cmd];
+  }
+  async function send(vec) {
+    try {
+      await api('/api/manual/cmd', {method:'POST', body: payload({linear:vec[0], angular:vec[1], hold_sec:.35})});
+    } catch (err) { toast(err.message); stop(); }
+  }
+  function start(cmd) {
+    const vec = vector(cmd);
+    if (!vec) return;
+    send(vec);
+    timer = setInterval(() => send(vec), 220);
+  }
+  async function stop() {
+    if (timer) clearInterval(timer);
+    timer = null;
+    try { await api('/api/manual/stop', {method:'POST'}); } catch {}
+  }
+  document.querySelectorAll('[data-cmd]').forEach(btn => {
+    btn.onpointerdown = () => start(btn.dataset.cmd);
+    btn.onpointerup = stop;
+    btn.onpointercancel = stop;
+    btn.onpointerleave = stop;
+  });
+  window.addEventListener('blur', stop);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); });
+  el('manualStopBtn').onclick = stop;
+  el('linearSpeed').oninput = updateSpeedText;
+  el('angularSpeed').oninput = updateSpeedText;
+  updateSpeedText();
+}
+function bindMapCanvas() {
+  const canvas = el('mapCanvas');
+  function canvasPoint(evt) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (evt.clientX - rect.left) * canvas.width / rect.width,
+      y: (evt.clientY - rect.top) * canvas.height / rect.height
+    };
+  }
+  canvas.addEventListener('wheel', evt => {
+    const map = activeMap();
+    if (!map?.ok) return;
+    evt.preventDefault();
+    const p = canvasPoint(evt);
+    const before = canvasToWorld(p.x, p.y, canvas, map);
+    const factor = evt.deltaY < 0 ? 1.15 : 0.87;
+    state.view.scale = Math.max(0.5, Math.min(12, state.view.scale * factor));
+    state.view.fit = false;
+    const after = canvasToWorld(p.x, p.y, canvas, map);
+    state.view.offsetX += (after.x - before.x) / map.resolution * state.view.scale;
+    state.view.offsetY -= (after.y - before.y) / map.resolution * state.view.scale;
+    drawMap();
+  }, {passive:false});
+  canvas.addEventListener('pointerdown', evt => {
+    canvas.setPointerCapture(evt.pointerId);
+    const p = canvasPoint(evt);
+    const tool = el('mapTool').value;
+    if (evt.button === 2 || tool === 'pan') {
+      state.drag = {x:p.x, y:p.y, offsetX:state.view.offsetX, offsetY:state.view.offsetY};
+      return;
+    }
+    const map = activeMap();
+    if (!map?.ok) return;
+    const world = canvasToWorld(p.x, p.y, canvas, map);
+    const yaw = Number(el('poseYaw').value || state.status?.pose?.yaw_deg || 0);
+    state.poseDrag = {
+      tool,
+      startCanvas:{x:p.x, y:p.y},
+      startWorld:{x:world.x, y:world.y},
+      pointerId:evt.pointerId
+    };
+    setSelectedPose(world.x, world.y, yaw, 34, tool);
+    if (tool === 'patrol') {
+      el('pointName').value = nextPointName();
+    }
+    drawMap();
+  });
+  canvas.addEventListener('pointermove', evt => {
+    const p = canvasPoint(evt);
+    const map = activeMap();
+    if (state.poseDrag && map?.ok) {
+      const world = canvasToWorld(p.x, p.y, canvas, map);
+      const dx = p.x - state.poseDrag.startCanvas.x;
+      const dy = p.y - state.poseDrag.startCanvas.y;
+      const dist = Math.hypot(dx, dy);
+      const yaw = dist >= 4 ? displayYawToRosYawDeg(yawBetweenWorld(state.poseDrag.startWorld, world)) : state.clicked.yaw_deg;
+      setSelectedPose(
+        state.poseDrag.startWorld.x,
+        state.poseDrag.startWorld.y,
+        yaw,
+        Math.max(34, dist),
+        state.poseDrag.tool
+      );
+      drawMap();
+      return;
+    }
+    if (state.drag) {
+      state.view.offsetX = state.drag.offsetX + (p.x - state.drag.x);
+      state.view.offsetY = state.drag.offsetY + (p.y - state.drag.y);
+      state.view.fit = false;
+      drawMap();
+    }
+  });
+  function endPointer() {
+    state.drag = null;
+    state.poseDrag = null;
+  }
+  canvas.addEventListener('pointerup', endPointer);
+  canvas.addEventListener('pointercancel', endPointer);
+  canvas.addEventListener('contextmenu', evt => evt.preventDefault());
+}
+function bind() {
+  el('langBtn').onclick = () => setLang(state.lang === 'zh' ? 'en' : 'zh');
+  el('estopBtn').onclick = () => confirm('E-STOP?') && action('/api/safety/estop', {}, false);
+  el('resetEstopBtn').onclick = () => action('/api/safety/reset', {}, true);
+  el('zeroBtn').onclick = () => action('/api/manual/stop');
+  el('stopAllBtn').onclick = () => action('/api/manager/system/stop_all', {}, false);
+  if (el('rvizStartBtn')) el('rvizStartBtn').onclick = () => rvizWebAction('start');
+  if (el('rvizRestartBtn')) el('rvizRestartBtn').onclick = () => rvizWebAction('restart');
+  if (el('rvizStopBtn')) el('rvizStopBtn').onclick = () => rvizWebAction('stop');
+  if (el('rvizReloadBtn')) el('rvizReloadBtn').onclick = () => refreshRvizFrame(true);
+  if (el('rvizOpenBtn')) el('rvizOpenBtn').onclick = () => window.open(rvizWebUrl(), '_blank', 'noopener');
+  if (el('rosWsUrl')) el('rosWsUrl').value = defaultRosWsUrl();
+  if (el('rosConnectBtn')) el('rosConnectBtn').onclick = () => connectRosWs(true);
+  if (el('rosReconnectBtn')) el('rosReconnectBtn').onclick = () => connectRosWs(true);
+  if (el('setInitialToolBtn')) el('setInitialToolBtn').onclick = () => setMapTool('initial');
+  if (el('setGoalToolBtn')) el('setGoalToolBtn').onclick = () => setMapTool('goal');
+  if (el('mapTool')) el('mapTool').onchange = () => setMapTool(el('mapTool').value);
+  if (el('fitMapBtn')) el('fitMapBtn').onclick = resetMapView;
+  if (el('cancelNavBtn')) el('cancelNavBtn').onclick = () => {
+    rosCommand('cancel_navigation');
+  };
+  if (el('refreshMapBtn')) el('refreshMapBtn').onclick = loadMap;
+  if (el('fillPoseBtn')) el('fillPoseBtn').onclick = fillPose;
+  el('resetViewBtn').onclick = resetMapView;
+  el('sendInitialBtn').onclick = () => {
+    rosCommand('publish_initial_pose', {x:+el('poseX').value, y:+el('poseY').value, yaw_deg:+el('poseYaw').value});
+  };
+  el('sendGoalBtn').onclick = () => {
+    rosCommand('publish_goal', {x:+el('poseX').value, y:+el('poseY').value, yaw_deg:+el('poseYaw').value});
+  };
+  if (el('addNavClickedPointBtn')) el('addNavClickedPointBtn').onclick = addClickedPoint;
+  el('routeSelect').onchange = () => { el('newRouteName').value = currentRoute(); action('/api/routes/set_active', {route:currentRoute()}); };
+  el('newRouteBtn').onclick = newRoute;
+  el('recordPointBtn').onclick = () => action('/api/routes/record_current', {route:currentRoute(), name:el('pointName').value, reset:false});
+  el('addClickedPointBtn').onclick = addClickedPoint;
+  el('saveRouteBtn').onclick = saveCurrentRoute;
+  el('reloadRouteBtn').onclick = () => action('/api/routes/reload');
+  el('startPatrolBtn').onclick = () => action('/api/mission/start', {}, true);
+  el('pausePatrolBtn').onclick = () => action('/api/mission/pause');
+  el('resumePatrolBtn').onclick = () => action('/api/mission/resume', {}, true);
+  el('stopPatrolBtn').onclick = () => action('/api/mission/stop');
+  el('enableGraspBtn').onclick = () => action('/api/grasp/enable', {enabled:true}, true);
+  el('disableGraspBtn').onclick = () => action('/api/grasp/enable', {enabled:false});
+  el('graspOnceBtn').onclick = () => action('/api/grasp/once', {}, true);
+  el('vlmProviderSelect').onchange = renderVlmModels;
+  el('applyVlmBtn').onclick = () => applyVlmModel(false);
+  el('restartVlmBtn').onclick = () => applyVlmModel(true);
+  el('saveCustomVlmBtn').onclick = () => saveCustomVlmProvider(false);
+  el('saveRestartCustomVlmBtn').onclick = () => saveCustomVlmProvider(true);
+  el('loadLogBtn').onclick = loadLog;
+  bindManual();
+  bindMapCanvas();
+}
+
+bind();
+setLang('zh');
+setMapTool('goal');
+refreshRvizFrame();
+refreshStatus();
+refreshRoutes();
+loadVlmModels();
+if (NATIVE_MAP_ENABLED) loadMap();
+setInterval(() => {
+  if (document.visibilityState !== 'hidden') refreshStatus();
+}, 2500);
+setInterval(() => {
+  if (document.visibilityState !== 'hidden' && state.tab === 'patrol') refreshRoutes();
+}, 7000);
+setInterval(() => {
+  if (document.visibilityState !== 'hidden' && state.tab === 'logs') loadLiveLog();
+}, 3000);
+window.addEventListener('resize', drawMap);
+</script>
+</body>
+</html>

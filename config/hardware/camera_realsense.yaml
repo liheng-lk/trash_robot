@@ -1,0 +1,17 @@
+# RealSense D435i runtime profile for Trash Robot V3.
+# The launch wrapper reads this file and forwards the values to
+# realsense2_camera/rs_launch.py.
+
+camera:
+  ros__parameters:
+    camera_name: camera
+    enable_color: true
+    enable_depth: true
+    enable_sync: true
+    align_depth_enable: true
+    pointcloud_enable: false
+    color_profile: "640,480,6"
+    depth_profile: "640,480,6"
+    initial_reset: false
+    reconnect_timeout: 6.0
+

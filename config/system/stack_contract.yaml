@@ -1,0 +1,102 @@
+# Trash Robot V3 — 统一栈契约（脚本 / Manager 共用）
+version: 1
+
+# 现场推荐入口：
+#   ./scripts/trash_stack.sh <组件> <start|stop|restart|status>
+# 兼容旧入口：./scripts/start_<组件>.sh（内部转调 stack）
+
+components:
+  base:
+    pid_key: base
+    mode: null
+    requires: []
+    topics_check: [/odom, /scan]
+    script: start_base.sh
+    manager_start: /trash_manager/start_base
+    manager_stop: /trash_manager/stop_base
+
+  camera:
+    pid_key: camera
+    mode: null
+    requires: []
+    topics_check: [/camera/camera/color/image_raw, /camera/camera/aligned_depth_to_color/image_raw]
+    script: start_camera.sh
+    manager_start: /trash_manager/start_camera
+    manager_stop: /trash_manager/stop_camera
+
+  arm:
+    pid_key: arm_moveit
+    mode: ARM_MANUAL
+    requires: []
+    services_check: [/move_point_cmd, /get_pose_cmd]
+    script: start_arm.sh
+    manager_start: /trash_manager/start_arm
+    manager_stop: /trash_manager/stop_arm
+
+  mapping:
+    pid_key: mapping
+    mode: NAVIGATION
+    requires: [base]
+    script: start_mapping.sh
+    manager_start: /trash_manager/start_mapping
+    manager_stop: /trash_manager/stop_mapping
+
+  navigation:
+    pid_key: nav2
+    mode: NAVIGATION
+    requires: [base]
+    map_file: runtime/current_map.txt
+    script: start_navigation.sh
+    manager_start: /trash_manager/start_navigation
+    manager_stop: /trash_manager/stop_navigation
+
+  grasp:
+    pid_key: grasp_pipeline
+    mode: GRASP
+    requires: [camera]
+    dry_default: true
+    script: start_grasp.sh
+    manager_start_dry: /trash_manager/start_grasp_vlm_dry
+    manager_start_live: /trash_manager/start_grasp_vlm_live
+    manager_stop: /trash_manager/stop_grasp
+
+  video:
+    pid_key: video
+    mode: VIDEO
+    requires: [camera]
+    manager_start: /trash_manager/start_video
+    manager_stop: /trash_manager/stop_video
+
+  handeye:
+    pid_key: handeye_web
+    mode: CALIBRATION
+    script: start_handeye.sh
+    manager_start: /trash_manager/start_handeye
+    manager_stop: /trash_manager/stop_handeye
+
+# 组合 profile（一键多组件，按顺序启动）
+profiles:
+  sensors:
+    start_order: [camera]
+    stop_order: [camera]
+
+  mobility:
+    start_order: [base]
+    stop_order: [base]
+
+  perception_dry:
+    start_order: [camera, grasp_dry]
+    stop_order: [grasp, camera]
+
+  patrol:
+    start_order: [base, camera, navigation]
+    stop_order: [navigation, camera, base]
+
+# 感知单链（禁止并行）
+perception_chain:
+  primary_camera_point: /trash_target_camera_point
+  legacy_camera_point: /trash_target_point_camera
+  arm_point: /trash_target_point_arm
+  grasp_plan: /trash_grasp_plan
+  depth_topic: /camera/camera/aligned_depth_to_color/image_raw
+  legacy_depth_locator: false

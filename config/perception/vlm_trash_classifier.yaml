@@ -1,0 +1,117 @@
+active_provider: mimo
+provider_registry_file: vlm_provider_registry.yaml
+fallback_order:
+- mimo
+call_interval_sec: 0.6
+api_timeout_sec: 15.0
+min_confidence: 0.55
+local_hobot_topic: /perception/detection/dosod
+local_hobot_max_age_sec: 1.2
+local_hobot_min_confidence: 0.3
+local_candidate_enabled: true
+local_candidate_topic: /trash_local_candidate
+local_candidate_min_center_y_norm: 0.30
+local_candidate_min_area_norm: 0.0004
+local_candidate_max_area_norm: 0.35
+local_image_candidate_enabled: true
+local_image_candidate_period_sec: 0.30
+local_image_candidate_min_center_y_norm: 0.32
+local_image_candidate_max_center_y_norm: 0.92
+local_image_candidate_min_area_norm: 0.0010
+local_image_candidate_max_area_norm: 0.06
+local_image_candidate_min_edge_density: 0.010
+local_image_candidate_min_contrast: 10.0
+jpeg_quality: 70
+max_image_width: 640
+max_consecutive_failures: 5
+backoff_initial_sec: 2.0
+backoff_max_sec: 60.0
+image_qos_reliability: reliable
+depth_topic: /camera/camera/aligned_depth_to_color/image_raw
+camera_info_topic: /camera/camera/color/camera_info
+depth_frame_id: camera_color_optical_frame
+strict_depth_size_check: true
+publish_debug_coordinates: true
+depth_min_m: 0.12
+depth_max_m: 2.5
+depth_roi_radius_px: 18
+depth_valid_ratio_min: 0.08
+depth_percentile: 50.0
+depth_max_age_sec: 1.0
+camera_point_average_enabled: true
+camera_point_average_samples: 2
+camera_point_average_window_sec: 6.0
+camera_point_average_max_delta_mm: 300.0
+camera_point_average_lock_after_ready: true
+grasp_refine_enabled: false
+fallback_to_vlm_grasp: true
+grasp_refine_min_mask_area_px: 80
+grasp_refine_depth_band_m: 0.06
+grasp_refine_edge_margin_px: 10
+grasp_refine_min_quality: 0.35
+grasp_refine_candidate_step_px: 3
+grasp_refine_depth_std_max_m: 0.035
+grasp_refine_hint_radius_ratio: 0.45
+grasp_refine_center_weight: 0.25
+grasp_refine_edge_weight: 0.45
+grasp_refine_depth_valid_weight: 0.2
+grasp_refine_depth_stability_weight: 0.15
+grasp_refine_vlm_hint_weight: 0.05
+plane_fallback_enabled: true
+plane_fallback_handeye_file: /home/sunrise/trash_robot_v3/config/grasp/handeye_point.yaml
+plane_fallback_arm_z_m: -0.265
+plane_fallback_min_camera_z_m: 0.05
+plane_fallback_max_camera_z_m: 2.5
+plane_fallback_depth_disagreement_m: 999.0
+floor_contact_use_plane_fallback: true
+cache_enabled: true
+cache_hold_sec: 8.0
+cache_republish_period_sec: 0.3
+cache_motion_check_period_sec: 1.0
+cache_image_change_threshold: 12.0
+cache_signature_width: 96
+grasp_point_overrides:
+  battery:
+    enabled: true
+    aspect_threshold: 1.35
+    vertical_y_ratio: 0.52
+    horizontal_x_ratio: 0.5
+    margin_ratio: 0.14
+providers:
+  dashscope:
+    enabled: false
+    model: qwen3.5-omni-flash-realtime
+    model_candidates:
+    - qwen3.5-omni-flash-realtime
+    - qwen3.5-omni-flash-realtime-2026-03-15
+    - qwen3.5-omni-plus-realtime
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    api_key_env: DASHSCOPE_API_KEY
+  mimo:
+    enabled: true
+    model: mimo-v2.5
+    model_candidates:
+    - mimo-v2.5
+    - mimo-v2-omni
+    base_url: https://token-plan-sgp.xiaomimimo.com/v1
+    api_key_env: MIMO_API_KEY
+  zhipu:
+    enabled: false
+    model: glm-4v-plus-0111
+    model_candidates:
+    - glm-4v-plus-0111
+    - glm-4v-plus
+    base_url: https://open.bigmodel.cn/api/paas/v4
+    api_key_env: ZHIPUAI_API_KEY
+  local_hobot:
+    enabled: false
+    model: hobot_dosod
+    model_candidates:
+    - hobot_dosod
+    base_url: ''
+    api_key_env: ''
+  deepseek:
+    enabled: false
+    model: ''
+    base_url: ''
+    api_key_env: DEEPSEEK_API_KEY

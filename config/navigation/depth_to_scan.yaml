@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+    output_frame: base_link
+
+    # 深度转激光基础参数
+    scan_time: 0.20
+    range_min: 0.15
+    range_max: 1.50
+
+    # 关键：先缩小扫描带，减轻负载
+    scan_height: 30
+
+    # 关键：不要输出 inf，方便后续 costmap 直接处理
+    use_inf: false

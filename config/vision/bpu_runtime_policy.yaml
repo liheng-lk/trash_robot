@@ -1,0 +1,37 @@
+# RDK X5 local BPU backend policy.
+# 当前阶段默认不开启；VLM API 仍是主线。后续接入本地模型时必须遵守本文件。
+
+backend: hbm_runtime
+enabled: false
+status: reserved_for_future_local_model
+
+model:
+  name: qwen3.5:2b
+  model_file: ''
+  input_width: 0
+  input_height: 0
+  input_format: nv12_packed
+  max_loaded_instances: 1
+
+runtime_rules:
+  require_hbm_runtime: true
+  forbid_hobot_dnn: true
+  forbid_cpu_inference: true
+  forbid_gpu_inference: true
+  forbid_multiple_models: true
+  keep_single_global_instance: true
+  unload_when_idle_sec: 300
+  release_tensors_after_inference: true
+  exception_safe: true
+  log_detailed_errors: true
+
+image_preprocess:
+  use_cv_bridge: true
+  avoid_extra_copy: true
+  required_format: nv12_packed
+  strict_model_input_size: true
+
+bpu_lock:
+  lock_name: BPU_INFERENCE
+  max_concurrent_inference: 1
+  reject_when_busy: true
