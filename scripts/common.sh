@@ -264,3 +264,103 @@ stop_video() {
   release_mode VIDEO
   set -e
 }
+
+video_port_ready() {
+  local port="${1:-8092}"
+  python3 - "$port" <<'PY'
+import socket
+import sys
+
+port = int(sys.argv[1])
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.settimeout(0.3)
+try:
+    sock.connect(("127.0.0.1", port))
+except OSError:
+    sys.exit(1)
+finally:
+    sock.close()
+sys.exit(0)
+PY
+}
+
+video_health_ready() {
+  local port="${1:-8092}"
+  python3 - "$port" <<'PY'
+import json
+import sys
+import urllib.request
+
+try:
+    with urllib.request.urlopen(f"http://127.0.0.1:{int(sys.argv[1])}/health", timeout=0.8) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+except Exception:
+    sys.exit(1)
+
+sys.exit(0 if data.get("state") == "has_frame" else 1)
+PY
+}
+
+wait_for_video_stream() {
+  local port="${1:-8092}"
+  local deadline="${2:-25}"
+  local waited=0
+  while [ "$waited" -lt "$deadline" ]; do
+    if video_health_ready "$port"; then
+      return 0
+    fi
+    sleep 1
+    waited=$((waited + 1))
+  done
+  return 1
+}
+
+start_video_stream() {
+  local port="${TRASH_VIDEO_PORT:-8092}"
+  local video_log_dir="$TRASH_ROBOT_LOG_DIR/video"
+  local host="${TRASH_ROBOT_HOST:-192.168.1.121}"
+  local jpeg_quality="${TRASH_VIDEO_JPEG_QUALITY:-35}"
+  local max_width="${TRASH_VIDEO_MAX_WIDTH:-480}"
+  local max_fps="${TRASH_VIDEO_MAX_FPS:-2.0}"
+  local idle_fps="${TRASH_VIDEO_IDLE_FPS:-0.2}"
+  local max_clients="${TRASH_VIDEO_MAX_CLIENTS:-3}"
+  mkdir -p "$video_log_dir"
+
+  if video_health_ready "$port"; then
+    echo "video stream already ready: http://$host:$port/"
+    return 0
+  fi
+
+  stop_pid video >/dev/null 2>&1 || true
+  if video_port_ready "$port"; then
+    echo "ERROR: port $port is occupied but video /health is not ready; stop stale video process first" >&2
+    return 1
+  fi
+
+  start_detached video "$video_log_dir/light_mjpeg_streamer.log" \
+    ros2 run trash_robot_vision light_mjpeg_streamer --ros-args \
+      -p image_topic:=/camera/camera/color/image_raw \
+      -p host:=0.0.0.0 \
+      -p port:="$port" \
+      -p jpeg_quality:="$jpeg_quality" \
+      -p max_width:="$max_width" \
+      -p max_fps:="$max_fps" \
+      -p idle_fps:="$idle_fps" \
+      -p max_clients:="$max_clients" \
+      -p show_detections:=true \
+      -p show_yolo_candidate:=true \
+      -p yolo_candidate_topic:=/trash_yolo_candidate \
+      -p overlay_max_age_sec:="${TRASH_VIDEO_OVERLAY_MAX_AGE_SEC:-0.8}" \
+      -p yolo_overlay_max_age_sec:="${TRASH_VIDEO_YOLO_OVERLAY_MAX_AGE_SEC:-0.6}" \
+      -p coord_max_age_sec:="${TRASH_VIDEO_COORD_MAX_AGE_SEC:-1.0}"
+
+  cat "$(pid_file_for video)" > "$TRASH_ROBOT_RUNTIME/video_stream.pid" 2>/dev/null || true
+
+  if wait_for_video_stream "$port" "${TRASH_VIDEO_WAIT_SEC:-25}"; then
+    echo "video stream ready: http://$host:$port/"
+    return 0
+  fi
+
+  echo "ERROR: video stream did not become ready on port $port; log=$video_log_dir/light_mjpeg_streamer.log" >&2
+  return 1
+}

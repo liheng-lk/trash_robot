@@ -140,8 +140,7 @@ stack_component_start() {
       ;;
     video)
       if [ "$use_manager" = "1" ] && stack_manager_call /trash_manager/start_video 120; then return 0; fi
-      echo "ERROR: video only via manager; set TRASH_USE_MANAGER=1" >&2
-      return 1
+      start_video_stream
       ;;
     handeye)
       if [ "$use_manager" = "1" ] && stack_manager_call /trash_manager/start_handeye 120; then return 0; fi

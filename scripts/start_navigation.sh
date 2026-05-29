@@ -146,6 +146,18 @@ ensure_depth_camera() {
   return 1
 }
 
+ensure_navigation_video() {
+  if [ "${TRASH_NAV_START_VIDEO:-1}" != "1" ]; then
+    echo "navigation video startup disabled by TRASH_NAV_START_VIDEO=0"
+    return 0
+  fi
+  if start_video_stream; then
+    return 0
+  fi
+  echo "WARN video stream failed to start; navigation continues, check $TRASH_ROBOT_LOG_DIR/video/light_mjpeg_streamer.log" >&2
+  return 0
+}
+
 status() {
   echo "mode_lock: $(current_mode)"
   status_pid camera || true
@@ -178,6 +190,7 @@ start_navigation() {
 
   if navigation_goal_ready; then
     echo "navigation already running"
+    ensure_navigation_video
     echo "map: $map_file"
     echo "requires initial pose: ./scripts/init_pose.sh <x> <y> <yaw_deg>"
     echo "logs: $LOG_DIR"
@@ -196,6 +209,7 @@ start_navigation() {
     release_mode NAVIGATION
     exit 1
   fi
+  ensure_navigation_video
   # Navigation and online SLAM must not publish /map at the same time.
   # A stale slam_toolbox publisher makes AMCL rebuild its map repeatedly and
   # Nav2 will often abort with zero-length plans.

@@ -106,46 +106,10 @@ wait_for_video_stream() {
 
 ensure_video_for_grasp() {
   local mode="$1"
-  local port="${TRASH_VIDEO_PORT:-8092}"
-  local video_log_dir="$TRASH_ROBOT_LOG_DIR/video"
-  mkdir -p "$video_log_dir"
-
-  if video_health_ready "$port"; then
+  if start_video_stream; then
     return 0
   fi
 
-  echo "WARN: video stream :$port not ready; starting light_mjpeg_streamer before grasp" >&2
-  stop_pid video >/dev/null 2>&1 || true
-  if video_port_ready "$port"; then
-    echo "ERROR: port $port is occupied but /health is not ready; stop stale video process first" >&2
-    return 1
-  fi
-
-  start_detached video "$video_log_dir/light_mjpeg_streamer.log" \
-    ros2 run trash_robot_vision light_mjpeg_streamer --ros-args \
-      -p image_topic:=/camera/camera/color/image_raw \
-      -p host:=0.0.0.0 \
-      -p port:="$port" \
-      -p jpeg_quality:=55 \
-      -p max_width:=640 \
-      -p max_fps:=8.0 \
-      -p idle_fps:=0.5 \
-      -p max_clients:=8 \
-      -p show_detections:=true \
-      -p show_yolo_candidate:=true \
-      -p yolo_candidate_topic:=/trash_yolo_candidate \
-      -p overlay_max_age_sec:=0.8 \
-      -p yolo_overlay_max_age_sec:=0.6 \
-      -p coord_max_age_sec:=1.0
-
-  cat "$(pid_file_for video)" > "$TRASH_ROBOT_RUNTIME/video_stream.pid" 2>/dev/null || true
-
-  if wait_for_video_stream "$port" 20; then
-    echo "video stream ready: http://${TRASH_ROBOT_HOST:-192.168.1.121}:$port/stream.mjpg"
-    return 0
-  fi
-
-  echo "ERROR: video stream did not become ready on port $port; log=$video_log_dir/light_mjpeg_streamer.log" >&2
   if [ "$mode" = "live" ]; then
     return 1
   fi
