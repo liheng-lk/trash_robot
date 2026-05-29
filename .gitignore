@@ -51,4 +51,4 @@ models/**/*.jpeg
 *.db3
 *.mcap
 datasets/
-paper_ball_dataset/
+/paper_ball_dataset/

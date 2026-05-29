@@ -12,6 +12,7 @@ Trash Robot V3 统一栈控制
 用法:
   ./scripts/trash_stack.sh <组件> <start|stop|restart|status> [参数...]
   ./scripts/trash_stack.sh profile <名称> <start|stop>     # 组合启动
+  ./scripts/trash_stack.sh status
   ./scripts/trash_stack.sh status-all
   ./scripts/trash_stack.sh stop-all
 
@@ -287,6 +288,10 @@ stack_dispatch() {
       return 0
       ;;
     status-all)
+      stack_status_all
+      return 0
+      ;;
+    status)
       stack_status_all
       return 0
       ;;
